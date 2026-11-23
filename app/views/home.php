@@ -30,13 +30,10 @@ require __DIR__ . '/_nav.php';
 <main>
   <section id="home" class="hero-section">
     <div class="hero-media" aria-hidden="true">
-      <iframe
-        title="Map backdrop"
-        loading="lazy"
-        src="https://www.openstreetmap.org/export/embed.html?bbox=120.330%2C16.725%2C120.365%2C16.755&amp;layer=mapnik&amp;marker=16.74078%2C120.34589">
-      </iframe>
+      <div id="heroMap" class="hero-map" role="img" aria-label="Map of Barangay Sta. Cruz, Bacnotan, La Union"></div>
     </div>
     <div class="hero-overlay"></div>
+    <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · © OpenStreetMap</p>
     <div class="hero-inner container-xl px-3">
       <div class="hero-copy">
         <h1 class="hero-title">Barangay Sta. Cruz</h1>
@@ -70,7 +67,6 @@ require __DIR__ . '/_nav.php';
         </a>
       </div>
     </div>
-    <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · © OpenStreetMap</p>
   </section>
 
   <section id="services" class="page-section" style="background:#f8f9fa">
@@ -326,5 +322,6 @@ require __DIR__ . '/_nav.php';
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="<?= h(base_url('assets/govly2.js')) ?>"></script>
 </body></html>
