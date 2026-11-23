@@ -13,21 +13,39 @@ $kagawads = array_values(array_filter($officials, fn($o) => $o['position'] === '
 $staff = array_values(array_filter($officials, fn($o) => in_array($o['position'], ['Barangay Secretary', 'Barangay Treasurer'], true)));
 $others = array_values(array_filter($officials, fn($o) => !in_array($o['position'], ['Punong Barangay', 'Kagawad', 'Barangay Secretary', 'Barangay Treasurer'], true)));
 $icons = ['📄','🏠','🤝','💼','👤','💛'];
+
+$hotlines = [
+    ['911', 'tel:911', 'La Union Hotline', 'Telephone'],
+    ['0919-546-1800', 'tel:09195461800', 'Bacnotan Rescue', 'Smart'],
+    ['0949-474-2161', 'tel:09494742161', 'MDRRMO', 'Smart'],
+    ['0998-598-5156', 'tel:09985985156', 'PNP – Bacnotan', 'Smart'],
+    ['0917-184-2711', 'tel:09171842711', 'BFP – Bacnotan', 'Globe'],
+];
+$bacnotanMap = 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d51975.24443365773!2d120.34348082346072!3d16.749856342903477!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3391ed51813b1759%3A0x7292eea3c59c6bde!2sBacnotan%2C%20La%20Union!5e1!3m2!1sen!2sph!4v1774850595468!5m2!1sen!2sph';
+$evacMap = 'https://www.google.com/maps/d/embed?mid=1ojLIKdvBAFRfbtzfSw1o747gd3FyjZ8&ehbc=2E312F&noprof=1';
+
 require __DIR__ . '/_head.php';
 require __DIR__ . '/_nav.php';
 ?>
 <main>
   <section id="home" class="hero-section">
+    <div class="hero-media" aria-hidden="true">
+      <iframe
+        title="Map backdrop"
+        loading="lazy"
+        src="https://www.openstreetmap.org/export/embed.html?bbox=120.330%2C16.725%2C120.365%2C16.755&amp;layer=mapnik&amp;marker=16.74078%2C120.34589">
+      </iframe>
+    </div>
+    <div class="hero-overlay"></div>
     <div class="hero-inner container-xl px-3">
-      <div class="hero-copy text-center text-md-start">
+      <div class="hero-copy">
         <h1 class="hero-title">Barangay Sta. Cruz</h1>
         <p class="hero-place">Bacnotan, La Union</p>
         <p class="hero-lead">
-          Welcome to <strong>GovLy 2.0</strong>, the official online portal of Barangay Sta. Cruz.
-          Access essential government services, request documents with <strong>email OTP</strong>,
-          and get <strong>email notifications</strong> when certificates are ready. No SMS.
+          Welcome to the official online portal of Barangay Sta. Cruz. Access essential government services,
+          request documents, stay updated on community news, and connect with your local government.
         </p>
-        <div class="hero-btn-row justify-content-center justify-content-md-start">
+        <div class="hero-btn-row">
           <a class="hero-btn hero-btn-primary" href="#services">Browse Services</a>
           <a class="hero-btn hero-btn-ghost" href="#contact">Contact Us</a>
         </div>
@@ -46,23 +64,21 @@ require __DIR__ . '/_nav.php';
           <div class="hero-stat-num"><?= count($services) ?></div>
           <div class="hero-stat-label">Services Available</div>
         </div>
-        <a class="hero-stat hero-stat-action" href="#spot-map">
+        <a class="hero-stat hero-stat-action" href="#weather">
           <div class="hero-stat-num">Map</div>
           <div class="hero-stat-label">View Location</div>
         </a>
       </div>
     </div>
-    <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · GovLy 2.0</p>
+    <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · © OpenStreetMap</p>
   </section>
 
   <section id="services" class="page-section" style="background:#f8f9fa">
     <div class="container-xl px-3">
       <div class="section-intro text-center">
         <span class="pill pill-blue">Government Services</span>
-        <h2 style="font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;margin-bottom:20px;color:#003d82">Available Services</h2>
-        <p style="font-size:1.1rem;color:#666;max-width:600px;margin:0 auto;line-height:1.6">
-          Access our most commonly requested services online. Apply for documents, permits, and certificates with ease.
-        </p>
+        <h2 class="bac-heading">Available Services</h2>
+        <p class="bac-lead">Access our most commonly requested services online. Apply for documents, permits, and certificates with ease.</p>
       </div>
       <div class="row g-4">
         <?php foreach ($services as $i => $s): ?>
@@ -79,7 +95,6 @@ require __DIR__ . '/_nav.php';
           </div>
         <?php endforeach; ?>
       </div>
-      <p class="text-center text-muted mt-4 mb-0">Register with email OTP · Certificate status emails only · No SMS</p>
     </div>
   </section>
 
@@ -87,8 +102,8 @@ require __DIR__ . '/_nav.php';
     <div class="container-xl px-3">
       <div class="section-intro text-center">
         <span class="pill pill-purple">Leadership</span>
-        <h2 style="font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;margin-bottom:20px;color:#003d82">Barangay Officials</h2>
-        <p style="font-size:1.1rem;color:#666;max-width:600px;margin:0 auto">Meet the dedicated public servants leading our community towards progress and development.</p>
+        <h2 class="bac-heading">Barangay Officials</h2>
+        <p class="bac-lead">Meet the dedicated public servants leading our community towards progress and development.</p>
       </div>
       <?php if (!$officials): ?>
         <p class="text-center text-muted py-4">No officials added yet.</p>
@@ -116,8 +131,8 @@ require __DIR__ . '/_nav.php';
     <div class="container-xl px-3">
       <div class="section-intro text-center">
         <span class="pill pill-red">Latest News</span>
-        <h2 style="font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;margin-bottom:20px;color:#003d82">News &amp; Announcements</h2>
-        <p style="font-size:1.1rem;color:#666;max-width:600px;margin:0 auto">Stay informed about important notices, community events, and government updates.</p>
+        <h2 class="bac-heading">News &amp; Announcements</h2>
+        <p class="bac-lead">Stay informed about important notices, community events, and government updates.</p>
       </div>
       <?php if (!$anns): ?>
         <p class="text-center text-muted">No announcements yet.</p>
@@ -144,52 +159,110 @@ require __DIR__ . '/_nav.php';
     </div>
   </section>
 
-  <section id="emergency-services" class="page-section" style="background:#fff">
+  <section id="weather" class="page-section bac-section">
     <div class="container-xl px-3">
       <div class="section-intro text-center">
-        <span class="pill pill-orange">Emergency</span>
-        <h2 style="font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;margin-bottom:20px;color:#003d82">Emergency Services</h2>
-        <p style="font-size:1.1rem;color:#666;max-width:600px;margin:0 auto"><?= h($site['emergencyLead'] ?? '') ?></p>
+        <span class="pill pill-blue">Municipality</span>
+        <h2 class="bac-heading">Weather and Map of Bacnotan, La Union</h2>
+        <p class="bac-lead">Live weather for Bacnotan and a municipal map for orientation around Barangay Sta. Cruz.</p>
       </div>
-      <div class="row g-3">
-        <?php foreach (array_slice($site['dispatch'] ?? [], 0, 5) as $row): ?>
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card-soft hotline-card h-100">
-              <h5 class="fw-bold" style="color:#003d82"><?= h($row['name'] ?? '') ?></h5>
-              <p class="small text-muted"><?= h($row['purpose'] ?? '') ?></p>
-              <?php foreach ($row['phones'] ?? [] as $ph): ?>
-                <a class="hotline-num" href="<?= h(tel_href($ph)) ?>"><?= h($ph) ?></a>
-              <?php endforeach; ?>
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-4">
+          <div class="bac-weather" id="weatherCard">
+            <div class="bac-weather-head">
+              <div>
+                <p class="bac-weather-kicker">Live conditions</p>
+                <h3>Bacnotan, PH</h3>
+                <p id="wxClock">—</p>
+              </div>
+              <span class="bac-weather-badge">Open-Meteo</span>
             </div>
+            <p class="bac-weather-loading" id="wxLoading">Loading weather…</p>
+            <div id="wxBody" style="display:none">
+              <div class="bac-weather-now">
+                <span class="bac-weather-icon" id="wxIcon">☁</span>
+                <div>
+                  <span class="bac-weather-temp"><span id="wxTemp">—</span><small>°C</small></span>
+                  <p class="bac-weather-desc" id="wxDesc">—</p>
+                </div>
+              </div>
+              <div class="bac-weather-quick">
+                <span id="wxHum">—%</span>
+                <span id="wxPress">— mb</span>
+                <span id="wxWind">— mph</span>
+              </div>
+              <ul class="bac-weather-list">
+                <li><span>Wind Gust</span><strong id="wxGust">—</strong></li>
+                <li><span>Clouds</span><strong id="wxCloud">—</strong></li>
+                <li><span>Visibility</span><strong id="wxVis">—</strong></li>
+                <li><span>Sunrise</span><strong id="wxRise">—</strong></li>
+                <li><span>Sunset</span><strong id="wxSet">—</strong></li>
+              </ul>
+            </div>
+            <p class="bac-weather-attr">Weather from <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></p>
           </div>
-        <?php endforeach; ?>
-      </div>
-      <div class="text-center mt-4">
-        <a class="btn btn-warning fw-bold" href="<?= h(base_url('emergency')) ?>">Browse complete hotlines</a>
+        </div>
+        <div class="col-lg-8">
+          <div class="bac-map-frame">
+            <iframe class="bac-map" title="Map of Bacnotan, La Union" src="<?= h($bacnotanMap) ?>" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section id="spot-map" class="page-section" style="background:#f8f9fa">
+  <section id="emergency-services" class="page-section bac-section bac-section-alt">
+    <div class="container-xl px-3">
+      <div class="section-intro text-center">
+        <span class="pill pill-blue">Public safety</span>
+        <h2 class="bac-heading">Emergency Services</h2>
+        <p class="bac-lead">Evacuation centers across Bacnotan and the main municipal hotlines. Call 911 first when life, fire, or crime is involved.</p>
+      </div>
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-7">
+          <div class="bac-map-frame">
+            <iframe class="bac-map" title="Bacnotan evacuation centers" src="<?= h($evacMap) ?>" loading="lazy" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="bac-hotlines">
+            <?php foreach ($hotlines as [$num, $href, $name, $net]): ?>
+              <a class="bac-hotline" href="<?= h($href) ?>">
+                <span class="bac-hotline-num"><?= h($num) ?></span>
+                <span class="bac-hotline-name"><?= h($name) ?></span>
+                <span class="bac-hotline-net"><?= h($net) ?></span>
+              </a>
+            <?php endforeach; ?>
+            <a class="bac-hotline bac-hotline-more" href="<?= h(base_url('emergency')) ?>">
+              <span class="bac-hotline-num">☎ Emergency Hotlines</span>
+              <span class="bac-hotline-net">Browse complete hotlines</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="spot-map" class="page-section" style="background:#fff">
     <div class="container-xl px-3">
       <div class="section-intro text-center">
         <span class="pill pill-blue">Location</span>
-        <h2 style="font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;margin-bottom:20px;color:#003d82">Barangay Spot Map</h2>
-        <p style="font-size:1.1rem;color:#666;max-width:600px;margin:0 auto">Brgy. Sta. Cruz, Bacnotan, La Union — OpenStreetMap view of the barangay area.</p>
+        <h2 class="bac-heading">Barangay Spot Map</h2>
+        <p class="bac-lead">Spot map of Barangay Sta. Cruz — roads follow OpenStreetMap, with local landmarks inside the barangay.</p>
       </div>
-      <div class="map-frame">
-        <iframe title="Sta. Cruz map" loading="lazy"
+      <div class="bac-map-frame">
+        <iframe class="bac-map" title="Sta. Cruz map" loading="lazy"
           src="https://www.openstreetmap.org/export/embed.html?bbox=120.330%2C16.730%2C120.360%2C16.750&amp;layer=mapnik&amp;marker=16.74078%2C120.34589"></iframe>
       </div>
     </div>
   </section>
 
-  <section id="contact" class="page-section" style="background:#fff">
+  <section id="contact" class="page-section" style="background:#f8f9fa">
     <div class="container-xl px-3">
       <div class="section-intro text-center">
         <span class="pill pill-blue">Contact</span>
-        <h2 style="font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;margin-bottom:20px;color:#003d82">Get in Touch</h2>
-        <p style="font-size:1.1rem;color:#666;max-width:600px;margin:0 auto">Have questions? We're here to help. Reach out through any of the channels below.</p>
+        <h2 class="bac-heading">Get in Touch</h2>
+        <p class="bac-lead">Have questions? We're here to help. Reach out through any of the channels below.</p>
       </div>
       <div class="row g-4">
         <div class="col-12 col-lg-5">
@@ -230,7 +303,7 @@ require __DIR__ . '/_nav.php';
     <div class="row g-4">
       <div class="col-md-5">
         <h5 class="fw-bold">Barangay Sta. Cruz</h5>
-        <p class="opacity-75">GovLy 2.0 — committed to serving our community with transparency, efficiency, and compassion. Email OTP &amp; certificate emails only (no SMS).</p>
+        <p class="opacity-75">Committed to serving our community with transparency, efficiency, and compassion. Your trust is our greatest responsibility.</p>
       </div>
       <div class="col-md-3">
         <h6 class="fw-bold">Quick Links</h6>
@@ -238,7 +311,7 @@ require __DIR__ . '/_nav.php';
           <li><a class="text-white text-decoration-none" href="#home">Home</a></li>
           <li><a class="text-white text-decoration-none" href="#services">Services</a></li>
           <li><a class="text-white text-decoration-none" href="#officials">Officials</a></li>
-          <li><a class="text-white text-decoration-none" href="<?= h(base_url('emergency')) ?>">Emergency</a></li>
+          <li><a class="text-white text-decoration-none" href="#emergency-services">Emergency</a></li>
         </ul>
       </div>
       <div class="col-md-4">
@@ -249,7 +322,7 @@ require __DIR__ . '/_nav.php';
       </div>
     </div>
     <hr class="border-light opacity-25 my-4" />
-    <p class="mb-0 small opacity-75 text-center">© <?= date('Y') ?> Barangay Sta. Cruz, Bacnotan, La Union · GovLy 2.0. All rights reserved.</p>
+    <p class="mb-0 small opacity-75 text-center">© <?= date('Y') ?> Barangay Sta. Cruz, Bacnotan, La Union. All rights reserved.</p>
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
