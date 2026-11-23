@@ -7,25 +7,21 @@
 }
 
 body { background: #f8f9fa; color: #333; }
-/* Capstone uses fixed 80px nav + hero margin-top:80px (no extra spacer gap) */
-.nav-spacer { height: 80px; }
-.hero-section { margin-top: 0 !important; }
-.site-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-  background: linear-gradient(135deg, #0038A8 0%, #002570 50%, #001a47 100%);
-}
+/* Exact Capstone: fixed nav + hero margin-top:80px from finale.css */
+.nav-spacer { display: none; height: 0; }
 .site-nav-bar { height: 80px; }
 .nav-link-custom {
   background: transparent; border: 0; color: #fff !important;
   font-size: .9rem; font-weight: 500; text-decoration: none; cursor: pointer;
 }
 .nav-link-custom:hover { color: #ffc107 !important; }
+.nav-link-custom:hover::after { width: 100%; }
 #themeToggle {
-  width: 38px; height: 38px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 10px; border: 1px solid rgba(255,255,255,.45);
-  background: rgba(255,255,255,.08); color: #fff; line-height: 1;
+  color: #fff; line-height: 1;
 }
+/* Remove Bootstrap dropdown caret — Capstone uses lucide chevron SVG */
+.site-nav .dropdown-toggle::after { display: none; }
 
 .flash {
   position: fixed; top: 84px; left: 50%; transform: translateX(-50%);
@@ -44,49 +40,24 @@ body { background: #f8f9fa; color: #333; }
   font-size: 1.1rem; color: #666; max-width: 600px;
   margin: 0 auto; line-height: 1.6;
 }
-/* Hero matches Capstone Finale: static OSM capture + live Leaflet OSM */
+/* Capstone hero: Leaflet map + navy tile filter (finale.css) + static fallback */
 .hero-section .hero-media {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  background: #0038a8;
-  overflow: hidden;
-  pointer-events: none;
+  background-color: #0038a8;
+  background-image: url('hero-map-navy.jpg?v=6');
+  background-size: cover;
+  background-position: center;
 }
-.hero-section .hero-map-static {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  z-index: 0;
-  pointer-events: none;
-  display: block;
+.hero-section .hero-map.leaflet-container {
+  background: transparent;
 }
-.hero-section .hero-map {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-  background: transparent !important;
-}
-/* Exact Capstone tile filter from finale.css */
-.hero-section .hero-map .leaflet-tile-pane {
-  filter: grayscale(1) invert(1) sepia(1) hue-rotate(185deg) saturate(4.2) brightness(0.58);
-}
-.hero-section .hero-overlay { z-index: 2; }
-.hero-section .hero-inner { z-index: 3; position: relative; }
-.hero-section .hero-map-credit { z-index: 4; }
 .hero-btn {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+button.hero-stat {
+  font: inherit;
 }
 .pill {
   display: inline-block; padding: 8px 16px; border-radius: 20px;

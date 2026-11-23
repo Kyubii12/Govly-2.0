@@ -14,8 +14,29 @@
     btn.textContent = root.getAttribute('data-theme') === 'dark' ? '☀' : '☾';
   });
 
-  // Hero map uses the exact Capstone Finale OSM capture (assets/hero-map-navy.jpg).
-  // Live OSM tiles are skipped here — tile.openstreetmap.org often 403s and would cover the match.
+  // Exact Capstone Finale HeroMap.jsx
+  const heroEl = document.getElementById('heroMap');
+  if (heroEl && typeof L !== 'undefined') {
+    const STA_CRUZ = [16.74073, 120.34599];
+    const map = L.map(heroEl, {
+      center: STA_CRUZ,
+      zoom: 15,
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      touchZoom: false,
+    });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    const resize = () => map.invalidateSize();
+    requestAnimationFrame(resize);
+    setTimeout(resize, 200);
+    window.addEventListener('resize', resize);
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(heroEl);
+  }
 
   // Open-Meteo weather for Bacnotan (same as Capstone Finale)
   const wxCard = document.getElementById('weatherCard');

@@ -30,7 +30,7 @@ require __DIR__ . '/_nav.php';
 <main>
   <section id="home" class="hero-section">
     <div class="hero-media" aria-hidden="true">
-      <img class="hero-map-static" src="<?= h(base_url('assets/hero-map-navy.jpg')) ?>?v=5" alt="" width="1440" height="900" decoding="async" fetchpriority="high" />
+      <div id="heroMap" class="hero-map" role="img" aria-label="Map of Barangay Sta. Cruz, Bacnotan, La Union"></div>
     </div>
     <div class="hero-overlay"></div>
     <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · © OpenStreetMap</p>
@@ -39,8 +39,7 @@ require __DIR__ . '/_nav.php';
         <h1 class="hero-title">Barangay Sta. Cruz</h1>
         <p class="hero-place">Bacnotan, La Union</p>
         <p class="hero-lead">
-          Welcome to the official online portal of Barangay Sta. Cruz. Access essential government services,
-          request documents, stay updated on community news, and connect with your local government.
+          Welcome to the official online portal of Barangay Sta. Cruz. Access essential government services, request documents, stay updated on community news, and connect with your local government.
         </p>
         <div class="hero-btn-row">
           <a class="hero-btn hero-btn-primary" href="#services">Browse Services</a>
@@ -61,10 +60,10 @@ require __DIR__ . '/_nav.php';
           <div class="hero-stat-num"><?= count($services) ?></div>
           <div class="hero-stat-label">Services Available</div>
         </div>
-        <a class="hero-stat hero-stat-action" href="#weather">
+        <button type="button" class="hero-stat hero-stat-action" onclick="document.getElementById('weather')?.scrollIntoView({behavior:'smooth'})">
           <div class="hero-stat-num">Map</div>
           <div class="hero-stat-label">View Location</div>
-        </a>
+        </button>
       </div>
     </div>
   </section>
@@ -322,5 +321,6 @@ require __DIR__ . '/_nav.php';
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>?v=5"></script>
+<script src="<?= h(base_url('assets/leaflet/leaflet.js')) ?>?v=6"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=6"></script>
 </body></html>
