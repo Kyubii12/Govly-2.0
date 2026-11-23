@@ -20,7 +20,7 @@ function base_url(string $path = ''): string
     return $scheme . '://' . $host . ($dir === '' || $dir === '/' ? '' : $dir) . '/' . ltrim($path, '/');
 }
 
-function redirect(string $path): never
+function redirect(string $path): void
 {
     header('Location: ' . (str_starts_with($path, 'http') ? $path : base_url($path)));
     exit;
