@@ -321,6 +321,6 @@ require __DIR__ . '/_nav.php';
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= h(base_url('assets/leaflet/leaflet.js')) ?>?v=6"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>?v=6"></script>
+<script src="<?= h(base_url('assets/leaflet/leaflet.js')) ?>?v=7"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=7"></script>
 </body></html>

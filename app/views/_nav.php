@@ -57,7 +57,21 @@
         <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-white" href="<?= h(base_url('#announcements')) ?>">News</a>
         <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-white" href="<?= h(base_url('emergency')) ?>">Emergency</a>
         <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-white" href="<?= h(base_url('#contact')) ?>">Contact</a>
+        <div class="border-top pt-2 mt-1" style="border-color:rgba(255,255,255,.1)">
+          <?php if (!$u): ?>
+            <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-white" href="<?= h(base_url('login')) ?>">Login</a>
+            <a class="btn btn-warning text-start fw-bold py-2 px-3 rounded-2" href="<?= h(base_url('register')) ?>">Register</a>
+          <?php elseif (is_admin_user($u)): ?>
+            <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-white" href="<?= h(base_url('admin')) ?>">Admin Panel</a>
+            <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-danger" href="<?= h(base_url('logout')) ?>">Logout</a>
+          <?php else: ?>
+            <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-white" href="<?= h(base_url('dashboard')) ?>">Dashboard</a>
+            <a class="btn text-start fw-medium py-2 px-3 rounded-2 text-danger" href="<?= h(base_url('logout')) ?>">Logout</a>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
   </div>
 </nav>
+<div class="nav-spacer" aria-hidden="true"></div>
+

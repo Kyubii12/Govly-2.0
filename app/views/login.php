@@ -9,12 +9,9 @@ require __DIR__ . '/_nav.php';
 ?>
 <div class="auth-page">
   <form class="auth-card" method="post">
-    <div class="d-flex justify-content-between align-items-start">
-      <div>
-        <h2>Barangay Sta. Cruz</h2>
-        <p class="text-muted mb-0">GovLy 2.0 — login with <strong>email</strong> and password. No SMS.</p>
-      </div>
-      <button type="button" class="btn btn-sm btn-outline-secondary rounded-3" id="themeToggle" title="Night mode">☾</button>
+    <div>
+      <h2>Barangay Sta. Cruz</h2>
+      <p class="text-muted mb-0">GovLy 2.0 — login with <strong>email</strong> and password. No SMS.</p>
     </div>
 
     <div class="role-tabs">
@@ -43,5 +40,5 @@ require __DIR__ . '/_nav.php';
   </form>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=7"></script>
 </body></html>

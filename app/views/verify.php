@@ -5,8 +5,8 @@ $title = 'Certificate verification — GovLy';
 require __DIR__ . '/_head.php';
 require __DIR__ . '/_nav.php';
 ?>
-<div class="container section">
-  <div class="verify-card">
+<div class="auth-page">
+  <div class="verify-card" style="width:min(560px,100%)">
     <div class="verify-logos">
       <img src="<?= h(base_url('assets/bacnotan-logo.png.png')) ?>" alt="" />
       <img src="<?= h(base_url('assets/bagong-pilipinas-logo.png.png')) ?>" alt="" />
