@@ -30,7 +30,10 @@
       keyboard: false,
       touchZoom: false,
     });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    // Esri dark gray (reliable; OSM.org tiles often 403). Blue wash via CSS.
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 16,
+    }).addTo(map);
     const resize = () => map.invalidateSize();
     requestAnimationFrame(resize);
     window.addEventListener('resize', resize);
