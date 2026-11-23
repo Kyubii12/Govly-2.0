@@ -1,12 +1,13 @@
 # Auto-deploy GovLy 2.0 → Hostinger on every push to main.
 #
-# ONE-TIME: GitHub repo → Settings → Secrets and variables → Actions → New repository secret
-#   FTP_SERVER      = 156.67.222.119
-#   FTP_USERNAME    = u108914767
-#   FTP_PASSWORD    = your FTP password
-#   FTP_SERVER_DIR  = /domains/stacruzbacnotan.com/public_html/
+# ONE-TIME (required): GitHub → Settings → Secrets and variables → Actions
+#   Add repository secret:
+#     FTP_PASSWORD = your Hostinger FTP password
 #
-# app/config.php is NEVER uploaded (keeps DB/email passwords only on Hostinger).
+# Optional overrides (defaults below match this Hostinger account):
+#   FTP_SERVER / FTP_USERNAME / FTP_SERVER_DIR
+#
+# app/config.php is NEVER uploaded (DB/email passwords stay only on Hostinger).
 
 name: Deploy to Hostinger
 
@@ -22,13 +23,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check FTP password secret
+        env:
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          if [ -z "$FTP_PASSWORD" ]; then
+            echo "::error::Missing GitHub secret FTP_PASSWORD."
+            echo "Add it at: Settings → Secrets and variables → Actions → New repository secret"
+            echo "Name: FTP_PASSWORD"
+            echo "Value: your Hostinger FTP password (hPanel → Files → FTP Accounts)"
+            exit 1
+          fi
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: ${{ secrets.FTP_SERVER || '156.67.222.119' }}
+          username: ${{ secrets.FTP_USERNAME || 'u108914767' }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR || '/domains/stacruzbacnotan.com/public_html/' }}
           dangerous-clean-slate: false
           exclude: |
             **/.git*
