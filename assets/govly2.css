@@ -7,16 +7,25 @@
 }
 
 body { background: #f8f9fa; color: #333; }
-.nav-spacer { height: 72px; }
+/* Capstone uses fixed 80px nav + hero margin-top:80px (no extra spacer gap) */
+.nav-spacer { height: 80px; }
+.hero-section { margin-top: 0 !important; }
 .site-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   background: linear-gradient(135deg, #0038A8 0%, #002570 50%, #001a47 100%);
 }
+.site-nav-bar { height: 80px; }
 .nav-link-custom {
   background: transparent; border: 0; color: #fff !important;
   font-size: .9rem; font-weight: 500; text-decoration: none; cursor: pointer;
 }
 .nav-link-custom:hover { color: #ffc107 !important; }
+#themeToggle {
+  width: 38px; height: 38px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 10px; border: 1px solid rgba(255,255,255,.45);
+  background: rgba(255,255,255,.08); color: #fff; line-height: 1;
+}
 
 .flash {
   position: fixed; top: 84px; left: 50%; transform: translateX(-50%);
@@ -35,7 +44,7 @@ body { background: #f8f9fa; color: #333; }
   font-size: 1.1rem; color: #666; max-width: 600px;
   margin: 0 auto; line-height: 1.6;
 }
-/* Hero: static navy map always visible; Leaflet tiles enhance when available */
+/* Hero matches Capstone Finale: static OSM capture + live Leaflet OSM */
 .hero-section .hero-media {
   position: absolute;
   inset: 0;
@@ -44,6 +53,7 @@ body { background: #f8f9fa; color: #333; }
   z-index: 0;
   background: #0038a8;
   overflow: hidden;
+  pointer-events: none;
 }
 .hero-section .hero-map-static {
   position: absolute;
@@ -51,7 +61,7 @@ body { background: #f8f9fa; color: #333; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center center;
   z-index: 0;
   pointer-events: none;
   display: block;
@@ -65,20 +75,19 @@ body { background: #f8f9fa; color: #333; }
   pointer-events: none;
   background: transparent !important;
 }
+/* Exact Capstone tile filter from finale.css */
 .hero-section .hero-map .leaflet-tile-pane {
-  /* Esri dark gray → Capstone navy blue wash */
-  filter: sepia(0.35) hue-rotate(185deg) saturate(2.8) brightness(0.85);
-  opacity: 0.9;
+  filter: grayscale(1) invert(1) sepia(1) hue-rotate(185deg) saturate(4.2) brightness(0.58);
 }
-.hero-section .hero-overlay {
-  z-index: 2;
-  background:
-    radial-gradient(ellipse at 40% 35%, rgba(0, 45, 150, 0.08) 0%, rgba(0, 32, 120, 0.22) 70%),
-    linear-gradient(180deg, rgba(0, 40, 140, 0.12) 0%, rgba(0, 28, 110, 0.28) 100%) !important;
-}
-.hero-section .hero-inner { z-index: 3; }
+.hero-section .hero-overlay { z-index: 2; }
+.hero-section .hero-inner { z-index: 3; position: relative; }
 .hero-section .hero-map-credit { z-index: 4; }
-.hero-btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.hero-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .pill {
   display: inline-block; padding: 8px 16px; border-radius: 20px;
   font-size: .85rem; font-weight: 600; margin-bottom: 15px;

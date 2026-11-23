@@ -1,5 +1,5 @@
 <?php
-$title = 'GovLy 2.0 · Barangay Sta.Cruz Portal';
+$title = 'Barangay Sta.Cruz Portal';
 $site = site();
 $officials = [];
 $anns = [];
@@ -30,11 +30,10 @@ require __DIR__ . '/_nav.php';
 <main>
   <section id="home" class="hero-section">
     <div class="hero-media" aria-hidden="true">
-      <img class="hero-map-static" src="<?= h(base_url('assets/hero-map-navy.jpg')) ?>?v=4" alt="" width="1536" height="1024" decoding="async" />
-      <div id="heroMap" class="hero-map" role="img" aria-label="Map of Barangay Sta. Cruz, Bacnotan, La Union"></div>
+      <img class="hero-map-static" src="<?= h(base_url('assets/hero-map-navy.jpg')) ?>?v=5" alt="" width="1440" height="900" decoding="async" fetchpriority="high" />
     </div>
     <div class="hero-overlay"></div>
-    <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · © Esri · © OpenStreetMap</p>
+    <p class="hero-map-credit">Barangay Sta. Cruz, Bacnotan, La Union · © OpenStreetMap</p>
     <div class="hero-inner container-xl px-3">
       <div class="hero-copy">
         <h1 class="hero-title">Barangay Sta. Cruz</h1>
@@ -323,6 +322,5 @@ require __DIR__ . '/_nav.php';
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= h(base_url('assets/leaflet/leaflet.js')) ?>?v=4"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>?v=4"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=5"></script>
 </body></html>
