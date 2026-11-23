@@ -1,0 +1,39 @@
+# Deploy GovLy 2.0 to Hostinger via FTP when you push to main.
+# In GitHub repo → Settings → Secrets and variables → Actions, add:
+#   FTP_SERVER   e.g. ftp.yourdomain.com
+#   FTP_USERNAME Hostinger FTP username
+#   FTP_PASSWORD Hostinger FTP password
+#   FTP_SERVER_DIR  e.g. /public_html/   (trailing slash)
+
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/_old_simple/**
+            **/.github/**
+            **/node_modules/**
+            **/README.md
+            **/app/config.php
+            **/uploads/ids/**
+            **/uploads/selfies/**
+            **/uploads/officials/**

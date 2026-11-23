@@ -1,0 +1,6 @@
+GovLy 2.0 — Barangay Sta. Cruz
+PHP + MySQL for Hostinger
+Email OTP + certificate completion emails only (no SMS)
+
+This folder is the standalone GovLy 2.0 project.
+Deploy: see README.md

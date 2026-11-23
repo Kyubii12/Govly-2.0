@@ -1,0 +1,2 @@
+# Allow official photos; block direct browsing of ID/selfie folders via parent rules.
+Options -Indexes

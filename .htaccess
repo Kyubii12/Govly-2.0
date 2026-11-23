@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteBase /
+
+# Block direct web access to app code and private uploads
+RewriteRule ^(app|sql)(/|$) - [F,L]
+RewriteRule ^uploads/(ids|selfies)/ - [F,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?r=$1 [QSA,L]
+
+Options -Indexes
+
+<FilesMatch "\.(env|sql|md|log)$">
+  Require all denied
+</FilesMatch>

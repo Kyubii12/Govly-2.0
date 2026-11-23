@@ -1,0 +1,10 @@
+app/config.php
+uploads/ids/*
+uploads/selfies/*
+uploads/officials/*
+!uploads/ids/.gitkeep
+!uploads/selfies/.gitkeep
+!uploads/officials/.gitkeep
+_old_simple/
+.env
+*.log
