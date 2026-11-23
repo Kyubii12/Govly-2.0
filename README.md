@@ -1,88 +1,57 @@
-# GovLy 2.0 — Barangay Sta. Cruz (PHP · Hostinger)
+# GovLy 2.0 — Barangay Sta. Cruz
 
-PHP + MySQL remake of the live portal ([stacruzbacnotan.vercel.app](https://stacruzbacnotan.vercel.app/)) for Hostinger.
+PHP + MySQL portal for Hostinger.  
+Live design match of the Vercel finale · **Email OTP + certificate emails only (no SMS)**
 
-**Brand:** GovLy 2.0  
-**Auth:** Email OTP only (no SMS)  
-**Alerts:** Email when admin marks a certificate **Completed** (or Rejected)
-
----
-
-## What’s included (copied from finale)
-
-| Area | Features |
-|------|----------|
-| Home | Hero, services, officials, news, emergency, map, contact (same layout as Vercel) |
-| Auth | Register → email OTP → admin approve · Login Resident/Admin tabs (email) |
-| Resident | Request certificates, message barangay |
-| Admin | Dashboard, Registrations, Registered, Census, Requests, Activity, Certificates/print+QR, Announcements, Officials, Prices & Contacts, Admins, Messages |
-| Extra | Emergency page, verify QR `/verify/{controlNo}` |
+Repo: https://github.com/Kyubii12/Govly-2.0
 
 ---
 
-## Deploy with GitHub → Hostinger
+## Auto-update: GitHub → Hostinger
 
-### A. First-time Hostinger setup
+Every `git push` to `main` deploys via GitHub Actions FTP.
 
-1. Upload once (or use FTP below) into `public_html`
-2. phpMyAdmin → Import `sql/schema.sql`
-3. Copy `app/config.example.php` → `app/config.php` on the server and fill MySQL + SMTP
-4. Create Hostinger email (e.g. `noreply@yourdomain.com`) for OTP + completion emails
-5. Writable folders: `uploads/ids`, `uploads/selfies`, `uploads/officials`
+### One-time secrets (required)
 
-Default Super Admin after import:
+1. hPanel → **FTP Accounts** → create/copy:
+   - FTP server / host  
+   - Username  
+   - Password  
+2. GitHub → **Govly-2.0** → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:
 
-- Email: `admin@stacruzbacnotan.com`
-- Password: `Admin@12345`
-
-### B. Connect GitHub (recommended)
-
-1. Create a GitHub repo and push this project  
-2. Hostinger hPanel → **FTP Accounts** → note host, user, password, path (`public_html/`)  
-3. GitHub → **Settings → Secrets and variables → Actions** → add:
-
-| Secret | Example |
-|--------|---------|
-| `FTP_SERVER` | `ftp.yourdomain.com` |
-| `FTP_USERNAME` | your FTP user |
-| `FTP_PASSWORD` | your FTP password |
+| Name | Value |
+|------|--------|
+| `FTP_SERVER` | FTP hostname from Hostinger |
+| `FTP_USERNAME` | FTP username |
+| `FTP_PASSWORD` | FTP password |
 | `FTP_SERVER_DIR` | `/public_html/` |
 
-4. Push to `main` (or run **Actions → Deploy to Hostinger → Run workflow**)  
-5. Keep `app/config.php` **only on the server** (it is excluded from deploy so secrets stay safe)
+3. Push once → Actions tab should show **Deploy to Hostinger** = green.
 
-### C. Or Hostinger “Git” deploy
+`app/config.php` is **never** deployed (passwords stay on the server only).
 
-hPanel → **Advanced → Git** → connect your GitHub repo → deploy into `public_html`.  
-Still create `app/config.php` on the server after first pull.
+### First-time server config (once)
+
+1. Upload `app/config.php` manually (or use `setup.php` once), with MySQL + SMTP filled.  
+2. phpMyAdmin → import `sql/schema.sql` into your database.  
+3. PHP version **8.2** or **8.3**.  
+4. Delete `setup.php` after success.
+
+Default admin: `admin@stacruzbacnotan.com` / `Admin@12345`
+
+---
+
+## Local push command
+
+```powershell
+cd C:\Users\Arc\Desktop\GovLy2.0
+git add .
+git commit -m "Update GovLy 2.0"
+git push origin main
+```
 
 ---
 
 ## Email-only flow
 
-```
-Register (email) → OTP email → Admin approve
-  → Login with email → Request certificate
-  → Admin prints / sets Completed → Resident gets email
-```
-
-Phone is optional contact only. **No SMS OTP. No SMS certificate alerts.**
-
----
-
-## Local / config
-
-Edit `app/config.php`:
-
-```php
-'db_name' => '…',
-'db_user' => '…',
-'db_pass' => '…',
-'mail' => [
-  'username' => 'noreply@yourdomain.com',
-  'password' => '…',
-  'from'     => 'noreply@yourdomain.com',
-],
-```
-
-SMTP: `smtp.hostinger.com` port `465` SSL.
+Register → OTP email → Admin approve → Request certificate → Admin Completes → Email notification (no SMS)
