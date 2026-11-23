@@ -30,6 +30,7 @@ require __DIR__ . '/_nav.php';
 <main>
   <section id="home" class="hero-section">
     <div class="hero-media" aria-hidden="true">
+      <img class="hero-map-static" src="<?= h(base_url('assets/hero-map-navy.jpg')) ?>?v=3" alt="" width="1536" height="1024" decoding="async" />
       <div id="heroMap" class="hero-map" role="img" aria-label="Map of Barangay Sta. Cruz, Bacnotan, La Union"></div>
     </div>
     <div class="hero-overlay"></div>
@@ -322,6 +323,6 @@ require __DIR__ . '/_nav.php';
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>"></script>
+<script src="<?= h(base_url('assets/leaflet/leaflet.js')) ?>?v=3"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=3"></script>
 </body></html>

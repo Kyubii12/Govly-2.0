@@ -10,9 +10,9 @@ $title = $title ?? ($GLOBALS['CONFIG']['app_name'] ?? 'GovLy 2.0');
   <title><?= h($title) ?></title>
   <link rel="icon" href="<?= h(base_url('assets/sta-cruz.jpg')) ?>" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="<?= h(base_url('assets/finale.css')) ?>" />
-  <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/leaflet/leaflet.css')) ?>?v=3" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/finale.css')) ?>?v=3" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>?v=3" />
 </head>
 <body>
 <?php if ($msg = flash('success')): ?><div class="flash ok"><?= h($msg) ?></div><?php endif; ?>

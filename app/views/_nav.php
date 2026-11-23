@@ -7,7 +7,7 @@
           style="width:48px;height:48px;object-fit:cover;border-radius:.5rem;box-shadow:0 4px 6px rgba(0,0,0,.1)" />
         <div class="site-brand">
           <h1 class="site-brand-title fw-bold mb-0" style="line-height:1.2;color:#fff;font-size:1.15rem">Barangay Sta.Cruz</h1>
-          <p class="mb-0" style="font-size:.7rem;color:#fff">GovLy 2.0 · Bacnotan, La Union</p>
+          <p class="mb-0" style="font-size:.7rem;color:#fff">Bacnotan City</p>
         </div>
       </a>
 

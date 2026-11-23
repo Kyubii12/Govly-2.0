@@ -35,21 +35,49 @@ body { background: #f8f9fa; color: #333; }
   font-size: 1.1rem; color: #666; max-width: 600px;
   margin: 0 auto; line-height: 1.6;
 }
-/* Hero map fills the section (Leaflet + navy tile filter from finale.css) */
-.hero-section .hero-media,
+/* Hero: static navy map always visible; Leaflet tiles enhance when available */
+.hero-section .hero-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: #0038a8;
+  overflow: hidden;
+}
+.hero-section .hero-map-static {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
 .hero-section .hero-map {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-}
-.hero-section .hero-map {
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
+  background: transparent !important;
 }
-.hero-section .hero-overlay { z-index: 1; }
-.hero-section .hero-inner { z-index: 2; }
-.hero-section .hero-map-credit { z-index: 3; }
+.hero-section .hero-map .leaflet-tile-pane {
+  /* Slightly brighter than finale so roads stay readable */
+  filter: grayscale(1) invert(1) sepia(1) hue-rotate(185deg) saturate(4.2) brightness(0.72);
+  opacity: 0.92;
+}
+.hero-section .hero-overlay {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 40% 35%, rgba(0, 45, 150, 0.12) 0%, rgba(0, 32, 120, 0.28) 70%),
+    linear-gradient(180deg, rgba(0, 40, 140, 0.15) 0%, rgba(0, 28, 110, 0.32) 100%) !important;
+}
+.hero-section .hero-inner { z-index: 3; }
+.hero-section .hero-map-credit { z-index: 4; }
 .hero-btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
 .pill {
   display: inline-block; padding: 8px 16px; border-radius: 20px;
