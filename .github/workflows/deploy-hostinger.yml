@@ -1,9 +1,12 @@
-# Deploy GovLy 2.0 to Hostinger via FTP when you push to main.
-# In GitHub repo → Settings → Secrets and variables → Actions, add:
-#   FTP_SERVER   e.g. ftp.yourdomain.com
-#   FTP_USERNAME Hostinger FTP username
-#   FTP_PASSWORD Hostinger FTP password
-#   FTP_SERVER_DIR  e.g. /public_html/   (trailing slash)
+# Auto-deploy GovLy 2.0 → Hostinger on every push to main.
+#
+# ONE-TIME: GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+#   FTP_SERVER      = ftp hostname from hPanel → FTP Accounts (often ftp.stacruzbacnotan.com or IP)
+#   FTP_USERNAME    = FTP username
+#   FTP_PASSWORD    = FTP password
+#   FTP_SERVER_DIR  = /public_html/
+#
+# app/config.php is NEVER uploaded (keeps DB/email passwords only on Hostinger).
 
 name: Deploy to Hostinger
 
@@ -26,13 +29,14 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
-            **/_old_simple/**
             **/.github/**
             **/node_modules/**
             **/README.md
+            **/GOVLY2.txt
             **/app/config.php
             **/uploads/ids/**
             **/uploads/selfies/**

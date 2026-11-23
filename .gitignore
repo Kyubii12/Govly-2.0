@@ -1,10 +1,15 @@
+# NEVER commit secrets
 app/config.php
+.env
+.env.*
+*.log
+
+# Private uploads
 uploads/ids/*
 uploads/selfies/*
 uploads/officials/*
 !uploads/ids/.gitkeep
 !uploads/selfies/.gitkeep
 !uploads/officials/.gitkeep
+
 _old_simple/
-.env
-*.log
