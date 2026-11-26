@@ -1792,31 +1792,200 @@ $pageSubs = [
 <?php elseif ($tab === 'website'):
   sync_services_with_templates();
   $site = site();
+  $servicesList = $site['services'] ?? [];
+  $serviceCount = count($servicesList);
+  $pricedCount = count(array_filter($servicesList, static fn($s) => trim((string) ($s['price'] ?? '')) !== ''));
+  $emergencyDisplay = trim((string) ($site['emergencyCall'] ?? '911')) ?: '911';
+  $emailDisplay = trim((string) ($site['contactEmail'] ?? '')) ?: 'Not set';
+  $hoursDisplay = trim((string) ($site['officeHours'] ?? '')) ?: 'Not set';
 ?>
-      <div class="bg-white rounded-4 shadow-sm border p-4">
-        <form method="post" class="row g-3">
-          <input type="hidden" name="action" value="save_site" />
-          <div class="col-md-6"><label class="form-label fw-medium">Emergency call</label><input class="form-control" name="emergencyCall" value="<?= h($site['emergencyCall'] ?? '') ?>" /></div>
-          <div class="col-12"><label class="form-label fw-medium">Emergency lead</label><textarea class="form-control" name="emergencyLead" rows="3"><?= h($site['emergencyLead'] ?? '') ?></textarea></div>
-          <div class="col-12"><label class="form-label fw-medium">Office address</label><textarea class="form-control" name="officeAddress" rows="2"><?= h($site['officeAddress'] ?? '') ?></textarea></div>
-          <div class="col-md-6"><label class="form-label fw-medium">Contact phones</label><textarea class="form-control" name="contactPhones" rows="2"><?= h($site['contactPhones'] ?? '') ?></textarea></div>
-          <div class="col-md-6"><label class="form-label fw-medium">Contact email</label><input class="form-control" name="contactEmail" value="<?= h($site['contactEmail'] ?? '') ?>" /></div>
-          <div class="col-md-6"><label class="form-label fw-medium">Office hours</label><textarea class="form-control" name="officeHours" rows="2"><?= h($site['officeHours'] ?? '') ?></textarea></div>
-          <div class="col-md-6"><label class="form-label fw-medium">Footer location</label><input class="form-control" name="footerLocation" value="<?= h($site['footerLocation'] ?? '') ?>" /></div>
-          <div class="col-12"><h6 class="fw-bold mb-0 mt-2">Service prices</h6></div>
-          <?php foreach ($site['services'] ?? [] as $i => $s): ?>
-            <div class="col-12 border rounded-3 p-3">
-              <strong><?= h($s['type']) ?></strong>
-              <div class="row g-2 mt-1">
-                <div class="col-md-4"><input class="form-control" name="price[<?= $i ?>]" value="<?= h($s['price'] ?? '') ?>" placeholder="Price" /></div>
-                <div class="col-md-4"><input class="form-control" name="time[<?= $i ?>]" value="<?= h($s['time'] ?? '') ?>" placeholder="Time" /></div>
-                <div class="col-md-4"><input class="form-control" name="desc[<?= $i ?>]" value="<?= h($s['desc'] ?? '') ?>" placeholder="Description" /></div>
+      <div class="welcome-banner website-hero">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div>
+            <div class="website-kicker">Public portal content</div>
+            <h2>Prices &amp; Contacts</h2>
+            <p class="mb-0">Keep service fees and barangay contact details accurate for residents on the homepage.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn-admin-secondary" href="<?= h(base_url('#services')) ?>" target="_blank" rel="noopener">View public services</a>
+            <a class="btn-admin-secondary" href="<?= h(base_url('#contact')) ?>" target="_blank" rel="noopener">View public contact</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+          <div class="admin-stat-card">
+            <div class="stat-label">Published services</div>
+            <div class="stat-value" style="color:#2563eb"><?= (int) $serviceCount ?></div>
+            <div class="stat-trend">Shown on homepage</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="admin-stat-card">
+            <div class="stat-label">Priced items</div>
+            <div class="stat-value" style="color:#0f766e"><?= (int) $pricedCount ?></div>
+            <div class="stat-trend">With fee amounts</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="admin-stat-card">
+            <div class="stat-label">Emergency call</div>
+            <div class="stat-value" style="font-size:1.2rem;color:#b91c1c"><?= h($emergencyDisplay) ?></div>
+            <div class="stat-trend">Primary hotline</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="admin-stat-card">
+            <div class="stat-label">Contact email</div>
+            <div class="stat-value" style="font-size:1rem;color:#7c3aed;word-break:break-word"><?= h($emailDisplay) ?></div>
+            <div class="stat-trend">Public inquiries</div>
+          </div>
+        </div>
+      </div>
+
+      <form method="post" class="website-editor" id="websiteEditorForm">
+        <input type="hidden" name="action" value="save_site" />
+
+        <div class="row g-3">
+          <div class="col-xl-5">
+            <div class="admin-panel mb-3">
+              <div class="admin-panel-head d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <h2 class="admin-panel-title">Public contacts</h2>
+                  <p class="admin-panel-sub mb-0">Office details shown in Contact and footer</p>
+                </div>
+                <span class="website-chip">Live on site</span>
+              </div>
+              <div class="p-3 p-md-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Emergency call</label>
+                    <input class="form-control website-input" name="emergencyCall" value="<?= h($site['emergencyCall'] ?? '') ?>" placeholder="911" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Contact email</label>
+                    <input class="form-control website-input" type="email" name="contactEmail" value="<?= h($site['contactEmail'] ?? '') ?>" placeholder="barangay@email.com" />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small">Emergency lead</label>
+                    <textarea class="form-control website-input" name="emergencyLead" rows="3" placeholder="Short safety message for the emergency section"><?= h($site['emergencyLead'] ?? '') ?></textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small">Office address</label>
+                    <textarea class="form-control website-input" name="officeAddress" rows="2" placeholder="Barangay hall address"><?= h($site['officeAddress'] ?? '') ?></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Contact phones</label>
+                    <textarea class="form-control website-input" name="contactPhones" rows="2" placeholder="One number per line"><?= h($site['contactPhones'] ?? '') ?></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Office hours</label>
+                    <textarea class="form-control website-input" name="officeHours" rows="2" placeholder="Mon–Fri, 8:00 AM – 5:00 PM"><?= h($site['officeHours'] ?? '') ?></textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small">Footer location</label>
+                    <input class="form-control website-input" name="footerLocation" value="<?= h($site['footerLocation'] ?? '') ?>" placeholder="Barangay Sta. Cruz, Bacnotan, La Union" />
+                  </div>
+                </div>
               </div>
             </div>
-          <?php endforeach; ?>
-          <div class="col-12"><button class="btn fw-semibold" style="background:#003d82;color:#fff" type="submit">Save</button></div>
-        </form>
-      </div>
+
+            <div class="admin-panel website-preview-card">
+              <div class="admin-panel-head">
+                <div>
+                  <h2 class="admin-panel-title">Resident preview</h2>
+                  <p class="admin-panel-sub mb-0">How contact info currently reads</p>
+                </div>
+              </div>
+              <div class="p-3 p-md-4">
+                <div class="website-preview-grid">
+                  <div>
+                    <span class="website-preview-label">Hours</span>
+                    <strong><?= h($hoursDisplay) ?></strong>
+                  </div>
+                  <div>
+                    <span class="website-preview-label">Emergency</span>
+                    <strong><?= h($emergencyDisplay) ?></strong>
+                  </div>
+                  <div>
+                    <span class="website-preview-label">Phones</span>
+                    <strong><?= h(trim((string) ($site['contactPhones'] ?? '')) ?: 'Not set') ?></strong>
+                  </div>
+                  <div>
+                    <span class="website-preview-label">Email</span>
+                    <strong><?= h($emailDisplay) ?></strong>
+                  </div>
+                  <div class="website-preview-wide">
+                    <span class="website-preview-label">Address</span>
+                    <strong><?= h(trim((string) ($site['officeAddress'] ?? '')) ?: 'Not set') ?></strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-7">
+            <div class="admin-panel">
+              <div class="admin-panel-head d-flex flex-wrap justify-content-between align-items-start gap-2">
+                <div>
+                  <h2 class="admin-panel-title">Service prices</h2>
+                  <p class="admin-panel-sub mb-0">Fees, processing time, and short descriptions for each certificate</p>
+                </div>
+                <span class="website-chip website-chip-gold"><?= (int) $serviceCount ?> services</span>
+              </div>
+              <div class="p-3 p-md-4">
+                <?php if (!$servicesList): ?>
+                  <div class="website-empty">
+                    <strong>No services yet</strong>
+                    <p class="mb-0">Add a certificate template to sync public services here.</p>
+                  </div>
+                <?php else: ?>
+                  <div class="website-price-grid">
+                    <?php foreach ($servicesList as $i => $s):
+                      $priceVal = trim((string) ($s['price'] ?? ''));
+                      $timeVal = trim((string) ($s['time'] ?? ''));
+                    ?>
+                      <article class="website-price-card">
+                        <div class="website-price-top">
+                          <div class="website-price-index"><?= str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) ?></div>
+                          <div>
+                            <h3><?= h($s['type'] ?? 'Service') ?></h3>
+                            <p><?= h($timeVal !== '' ? $timeVal : 'Set processing time') ?></p>
+                          </div>
+                          <div class="website-price-badge"><?= h($priceVal !== '' ? $priceVal : 'Set fee') ?></div>
+                        </div>
+                        <div class="row g-2">
+                          <div class="col-sm-4">
+                            <label class="form-label fw-semibold small mb-1">Price</label>
+                            <input class="form-control website-input" name="price[<?= $i ?>]" value="<?= h($s['price'] ?? '') ?>" placeholder="₱100.00" />
+                          </div>
+                          <div class="col-sm-4">
+                            <label class="form-label fw-semibold small mb-1">Time</label>
+                            <input class="form-control website-input" name="time[<?= $i ?>]" value="<?= h($s['time'] ?? '') ?>" placeholder="1–2 days" />
+                          </div>
+                          <div class="col-sm-4">
+                            <label class="form-label fw-semibold small mb-1">Description</label>
+                            <input class="form-control website-input" name="desc[<?= $i ?>]" value="<?= h($s['desc'] ?? '') ?>" placeholder="Short public note" />
+                          </div>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="website-savebar">
+          <div>
+            <strong>Ready to publish</strong>
+            <span>Updates appear on the public portal after saving.</span>
+          </div>
+          <button class="btn-admin-primary" type="submit">Save prices &amp; contacts</button>
+        </div>
+      </form>
 
 <?php elseif ($tab === 'admins'):
   $rows = db_all("SELECT * FROM users WHERE role IN ('admin','super_admin') ORDER BY role DESC, created_at");

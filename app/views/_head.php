@@ -15,7 +15,7 @@ $title = $title ?? ($GLOBALS['CONFIG']['app_name'] ?? 'GovLy 2.0');
   <link rel="stylesheet" href="<?= h(base_url('assets/finale.css')) ?>?v=15" />
   <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>?v=17" />
   <?php if (!empty($adminLayout)): ?>
-  <link rel="stylesheet" href="<?= h(base_url('assets/admin-ui.css')) ?>?v=20" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/admin-ui.css')) ?>?v=21" />
   <style>
     /* Admin must scroll with the page — never lock html/body to the viewport */
     html:has(body.admin-page) {
