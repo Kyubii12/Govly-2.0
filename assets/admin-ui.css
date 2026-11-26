@@ -349,6 +349,15 @@ body.admin-page .admin-donut {
   position: relative;
   flex-shrink: 0;
 }
+/* Requests: Pending → In Progress → Completed */
+body.admin-page .admin-donut-status {
+  background: conic-gradient(
+    #f59e0b 0 calc(var(--p1) * 1%),
+    #3b82f6 calc(var(--p1) * 1%) calc(var(--p2) * 1%),
+    #22c55e calc(var(--p2) * 1%) calc(var(--p3, 100) * 1%),
+    #e2e8f0 calc(var(--p3, 100) * 1%) 100%
+  );
+}
 body.admin-page .admin-donut::before {
   content: "";
   width: 82px;

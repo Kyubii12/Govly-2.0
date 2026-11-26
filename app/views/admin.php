@@ -106,18 +106,6 @@ $pageSubs = [
     </nav>
 
     <div class="sidebar-foot">
-      <div class="sidebar-art" aria-hidden="true">
-        <svg viewBox="0 0 180 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 68h160" stroke="#93c5fd" stroke-width="2"/>
-          <path d="M28 68V42l18-14 18 14v26" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1.5"/>
-          <path d="M74 68V36l22-16 22 16v32" fill="#93c5fd" stroke="#3b82f6" stroke-width="1.5"/>
-          <path d="M126 68V46l16-12 16 12v22" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1.5"/>
-          <circle cx="148" cy="22" r="8" fill="#fde68a"/>
-          <path d="M48 28c4-8 14-8 18 0" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-          <path d="M112 24c5-9 16-9 20 0" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <p class="sidebar-copy">© <?= date('Y') ?> Barangay Sta. Cruz<br>Bacnotan, La Union</p>
-      </div>
       <a href="<?= h(base_url()) ?>" class="sidebar-link">
         <?= admin_icon('globe', 16) ?> View website
       </a>
@@ -1139,7 +1127,7 @@ $pageSubs = [
               </div>
             </div>
             <div class="p-3 d-flex flex-wrap align-items-center gap-3 justify-content-center">
-              <div class="admin-donut" style="--p1:<?= h((string) $pPend) ?>;--p2:<?= h((string) ($pPend + $pProg)) ?>;--p3:<?= h((string) ($pPend + $pProg + $pDone)) ?>">
+              <div class="admin-donut admin-donut-status" style="--p1:<?= h((string) $pPend) ?>;--p2:<?= h((string) ($pPend + $pProg)) ?>;--p3:<?= h((string) ($pPend + $pProg + $pDone)) ?>">
                 <div class="admin-donut-center"><strong><?= (int) $countAll ?></strong><span>Total</span></div>
               </div>
               <div class="admin-legend">
