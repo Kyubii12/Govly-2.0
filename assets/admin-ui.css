@@ -558,6 +558,14 @@ body.admin-page .website-input:focus {
   box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .12) !important;
   background: #fff !important;
 }
+body.admin-page .website-desc {
+  min-height: 4.25rem;
+  resize: vertical;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 body.admin-page .website-preview-card {
   background:
     radial-gradient(circle at top right, rgba(37, 99, 235, .08), transparent 42%),

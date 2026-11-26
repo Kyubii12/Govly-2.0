@@ -1956,17 +1956,17 @@ $pageSubs = [
                           <div class="website-price-badge"><?= h($priceVal !== '' ? $priceVal : 'Set fee') ?></div>
                         </div>
                         <div class="row g-2">
-                          <div class="col-sm-4">
+                          <div class="col-sm-6">
                             <label class="form-label fw-semibold small mb-1">Price</label>
                             <input class="form-control website-input" name="price[<?= $i ?>]" value="<?= h($s['price'] ?? '') ?>" placeholder="₱100.00" />
                           </div>
-                          <div class="col-sm-4">
+                          <div class="col-sm-6">
                             <label class="form-label fw-semibold small mb-1">Time</label>
                             <input class="form-control website-input" name="time[<?= $i ?>]" value="<?= h($s['time'] ?? '') ?>" placeholder="1–2 days" />
                           </div>
-                          <div class="col-sm-4">
+                          <div class="col-12">
                             <label class="form-label fw-semibold small mb-1">Description</label>
-                            <input class="form-control website-input" name="desc[<?= $i ?>]" value="<?= h($s['desc'] ?? '') ?>" placeholder="Short public note" />
+                            <textarea class="form-control website-input website-desc" name="desc[<?= $i ?>]" rows="2" placeholder="Short public note"><?= h($s['desc'] ?? '') ?></textarea>
                           </div>
                         </div>
                       </article>
