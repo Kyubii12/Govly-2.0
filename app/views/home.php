@@ -61,7 +61,7 @@ $emergencyPreview = [
         'name' => 'Barangay Sta. Cruz Hall',
         'phones' => ['0951-960-2398', '0919-546-0617'],
         'tone' => '#0038A8',
-        'logo' => 'assets/sta-cruz.jpg',
+        'logo' => 'assets/sta-cruz.png',
     ],
 ];
 

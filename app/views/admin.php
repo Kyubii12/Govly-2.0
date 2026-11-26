@@ -85,9 +85,9 @@ $pageSubs = [
   <aside id="sidebar" class="<?= h($roleClass) ?>">
     <div class="sidebar-brand">
       <div class="d-flex align-items-center gap-2">
-        <img src="<?= h(base_url('assets/sta-cruz.jpg')) ?>" alt="Barangay Sta.Cruz Logo"
+        <img src="<?= h(base_url('assets/sta-cruz.png')) ?>" alt="Barangay Sta.Cruz Logo"
           class="rounded-circle flex-shrink-0"
-          style="width:44px;height:44px;object-fit:cover;border:2px solid #fff;box-shadow:0 4px 12px rgba(37,99,235,.2)" />
+          style="width:44px;height:44px;object-fit:cover;border:2px solid #fff;box-shadow:0 4px 12px rgba(37,99,235,.2);background:transparent" />
         <div>
           <div class="sidebar-brand-title">Barangay Sta. Cruz</div>
           <div class="sidebar-brand-sub">Population Management</div>

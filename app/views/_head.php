@@ -8,7 +8,7 @@ $title = $title ?? ($GLOBALS['CONFIG']['app_name'] ?? 'GovLy 2.0');
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= h($title) ?></title>
-  <link rel="icon" href="<?= h(base_url('assets/sta-cruz.jpg')) ?>" />
+  <link rel="icon" type="image/png" href="<?= h(base_url('assets/sta-cruz.png')) ?>" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <meta name="theme-color" content="#0038A8" />
   <link rel="stylesheet" href="<?= h(base_url('assets/leaflet/leaflet.css')) ?>?v=7" />

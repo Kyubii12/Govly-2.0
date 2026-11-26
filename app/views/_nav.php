@@ -4,11 +4,11 @@
   <div class="container-xl px-3">
     <div class="site-nav-bar d-flex align-items-center justify-content-between">
       <a class="d-flex align-items-center gap-3 text-decoration-none" href="<?= h(base_url()) ?>" style="cursor:pointer">
-        <img src="<?= h(base_url('assets/sta-cruz.jpg')) ?>" alt="Barangay Sta.Cruz Logo"
-          style="width:48px;height:48px;object-fit:cover;border-radius:.5rem;flex-shrink:0;box-shadow:0 4px 6px rgba(0,0,0,.1)" />
+        <img src="<?= h(base_url('assets/sta-cruz.png')) ?>" alt="Barangay Sta.Cruz Logo"
+          class="site-nav-logo" style="width:48px;height:48px;object-fit:cover;border-radius:50%;flex-shrink:0;box-shadow:0 4px 6px rgba(0,0,0,.1);background:transparent" />
         <div class="site-brand">
           <h1 class="site-brand-title fw-bold mb-0" style="line-height:1.2;color:#fff">Barangay Sta.Cruz</h1>
-          <p class="mb-0" style="font-size:.7rem;color:#fff">Bacnotan City</p>
+          <p class="mb-0" style="font-size:.7rem;color:#fff">Bacnotan, La Union</p>
         </div>
       </a>
 

@@ -129,7 +129,7 @@ function send_mail(string $to, string $subject, string $htmlBody, string $textBo
 function mail_wrap(string $title, string $innerHtml): string
 {
     $office = mail_office_name();
-    $brgyLogo = base_url('assets/sta-cruz.jpg');
+    $brgyLogo = base_url('assets/sta-cruz.png');
     $bagongLogo = base_url('assets/bagong-pilipinas-logo.png.png');
     return '<!DOCTYPE html><html><body style="font-family:Georgia,\'Times New Roman\',serif;background:#f4f6f9;padding:24px;margin:0;">'
         . '<div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #d7dee8;border-radius:8px;overflow:hidden;">'
