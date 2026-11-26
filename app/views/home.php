@@ -19,15 +19,49 @@ $staff = array_values(array_filter($officials, fn($o) => in_array($o['position']
 $others = array_values(array_filter($officials, fn($o) => !in_array($o['position'], ['Punong Barangay', 'Kagawad', 'Barangay Secretary', 'Barangay Treasurer'], true)));
 $icons = ['📄','🏠','🤝','💼','👤','💛'];
 
-$hotlines = [
-    ['911', 'tel:911', 'La Union Hotline', 'Telephone'],
-    ['0919-546-1800', 'tel:09195461800', 'Bacnotan Rescue', 'Smart'],
-    ['0949-474-2161', 'tel:09494742161', 'MDRRMO', 'Smart'],
-    ['0998-598-5156', 'tel:09985985156', 'PNP – Bacnotan', 'Smart'],
-    ['0917-184-2711', 'tel:09171842711', 'BFP – Bacnotan', 'Globe'],
-];
 $bacnotanMap = 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d51975.24443365773!2d120.34348082346072!3d16.749856342903477!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3391ed51813b1759%3A0x7292eea3c59c6bde!2sBacnotan%2C%20La%20Union!5e1!3m2!1sen!2sph!4v1774850595468!5m2!1sen!2sph';
-$evacMap = 'https://www.google.com/maps/d/embed?mid=1ojLIKdvBAFRfbtzfSw1o747gd3FyjZ8&ehbc=2E312F&noprof=1';
+$emergencyPreview = [
+    [
+        'code' => 'MDR',
+        'name' => 'MDRRMO Bacnotan',
+        'phones' => ['0949-474-2161', '0917-773-9994'],
+        'tone' => '#0f766e',
+        'logo' => 'assets/bacnotan-logo.png.png',
+    ],
+    [
+        'code' => 'PNP',
+        'name' => 'PNP Bacnotan',
+        'phones' => ['0998-598-5156', '0915-513-7245'],
+        'tone' => '#1d4ed8',
+    ],
+    [
+        'code' => 'BFP',
+        'name' => 'BFP Bacnotan',
+        'phones' => ['0917-184-2711', '(072) 607-5472'],
+        'tone' => '#b91c1c',
+    ],
+    [
+        'code' => 'MHO',
+        'name' => 'Municipal Health Office',
+        'phones' => ['0909-847-1268', '0917-718-9585'],
+        'tone' => '#0369a1',
+        'logo' => 'assets/bacnotan-logo.png.png',
+    ],
+    [
+        'code' => 'BDH',
+        'name' => 'Bacnotan District Hospital',
+        'phones' => ['0907-724-8269'],
+        'tone' => '#7c3aed',
+        'logo' => 'assets/bacnotan-logo.png.png',
+    ],
+    [
+        'code' => 'BRGY',
+        'name' => 'Barangay Sta. Cruz Hall',
+        'phones' => ['0951-960-2398', '0919-546-0617'],
+        'tone' => '#0038A8',
+        'logo' => 'assets/sta-cruz.jpg',
+    ],
+];
 
 require __DIR__ . '/_head.php';
 require __DIR__ . '/_nav.php';
@@ -229,34 +263,30 @@ require __DIR__ . '/_nav.php';
     </div>
   </section>
 
-  <section id="emergency-services" class="page-section bac-section bac-section-alt">
+  <section id="emergency-services" class="page-section emergency-preview-section">
     <div class="container-xl px-3">
       <div class="section-intro text-center">
-        <span class="pill pill-blue">Public safety</span>
-        <h2 class="bac-heading">Emergency Services</h2>
-        <p class="bac-lead">Evacuation centers across Bacnotan and the main municipal hotlines. Call 911 first when life, fire, or crime is involved.</p>
+        <span class="pill pill-orange">Public safety</span>
+        <h2 class="bac-heading">Emergency Hotlines</h2>
+        <p class="bac-lead">Quick contacts for Bacnotan response agencies. Call 911 first when life, fire, or crime is involved.</p>
       </div>
-      <div class="row g-4 align-items-stretch">
-        <div class="col-lg-7">
-          <div class="bac-map-frame">
-            <iframe class="bac-map" title="Bacnotan evacuation centers" src="<?= h($evacMap) ?>" loading="lazy" allowfullscreen></iframe>
-          </div>
-        </div>
-        <div class="col-lg-5">
-          <div class="bac-hotlines">
-            <?php foreach ($hotlines as [$num, $href, $name, $net]): ?>
-              <a class="bac-hotline" href="<?= h($href) ?>">
-                <span class="bac-hotline-num"><?= h($num) ?></span>
-                <span class="bac-hotline-name"><?= h($name) ?></span>
-                <span class="bac-hotline-net"><?= h($net) ?></span>
-              </a>
+      <div class="emergency-preview-row">
+        <?php foreach ($emergencyPreview as $item): ?>
+          <article class="emergency-preview-item">
+            <?php if (!empty($item['logo'])): ?>
+              <img class="emergency-preview-logo" src="<?= h(base_url($item['logo'])) ?>" alt="<?= h($item['name']) ?>" />
+            <?php else: ?>
+              <div class="emergency-preview-badge" style="--tone:<?= h($item['tone']) ?>"><?= h($item['code']) ?></div>
+            <?php endif; ?>
+            <h3><?= h($item['name']) ?></h3>
+            <?php foreach ($item['phones'] as $phone): ?>
+              <a href="<?= h(tel_href($phone)) ?>"><?= h($phone) ?></a>
             <?php endforeach; ?>
-            <a class="bac-hotline bac-hotline-more" href="<?= h(base_url('emergency')) ?>">
-              <span class="bac-hotline-num">☎ Emergency Hotlines</span>
-              <span class="bac-hotline-net">Browse complete hotlines</span>
-            </a>
-          </div>
-        </div>
+          </article>
+        <?php endforeach; ?>
+      </div>
+      <div class="text-center mt-4">
+        <a class="emergency-see-more" href="<?= h(base_url('emergency')) ?>">See more</a>
       </div>
     </div>
   </section>
