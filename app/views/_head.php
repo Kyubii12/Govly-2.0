@@ -13,7 +13,7 @@ $title = $title ?? ($GLOBALS['CONFIG']['app_name'] ?? 'GovLy 2.0');
   <meta name="theme-color" content="#0038A8" />
   <link rel="stylesheet" href="<?= h(base_url('assets/leaflet/leaflet.css')) ?>?v=7" />
   <link rel="stylesheet" href="<?= h(base_url('assets/finale.css')) ?>?v=15" />
-  <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>?v=15" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>?v=16" />
   <?php if (!empty($adminLayout)): ?>
   <link rel="stylesheet" href="<?= h(base_url('assets/admin-ui.css')) ?>?v=20" />
   <style>

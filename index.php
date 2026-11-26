@@ -26,6 +26,7 @@ $map = [
     'logout' => null,
     'verify' => 'verify.php',
     'print-cert' => 'print_cert.php',
+    'announcement' => 'announcement.php',
 ];
 
 if ($r === 'logout') {
@@ -37,6 +38,11 @@ if ($r === 'logout') {
 if (str_starts_with($r, 'verify/')) {
     $_GET['id'] = substr($r, 7);
     $r = 'verify';
+}
+
+if (str_starts_with($r, 'announcement/')) {
+    $_GET['id'] = substr($r, strlen('announcement/'));
+    $r = 'announcement';
 }
 
 $view = $map[$r] ?? 'home.php';

@@ -120,3 +120,70 @@
   setInterval(clock, 30000);
   setInterval(load, 10 * 60 * 1000);
 })();
+
+(function () {
+  document.querySelectorAll('[data-news-carousel]').forEach((root) => {
+    const track = root.querySelector('[data-news-track]');
+    const prev = root.querySelector('[data-news-prev]');
+    const next = root.querySelector('[data-news-next]');
+    const dotsWrap = root.querySelector('[data-news-dots]');
+    if (!track) return;
+
+    const cards = Array.from(track.children);
+    if (!cards.length) return;
+
+    const step = () => {
+      const card = cards[0];
+      const styles = window.getComputedStyle(track);
+      const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+      return card.getBoundingClientRect().width + gap;
+    };
+
+    const pageCount = () => Math.max(1, Math.ceil(track.scrollWidth / Math.max(track.clientWidth, 1)));
+
+    const renderDots = () => {
+      if (!dotsWrap) return;
+      const pages = pageCount();
+      dotsWrap.innerHTML = '';
+      for (let i = 0; i < pages; i += 1) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('aria-label', 'Go to news page ' + (i + 1));
+        btn.addEventListener('click', () => {
+          track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+        });
+        dotsWrap.appendChild(btn);
+      }
+      syncDots();
+    };
+
+    const syncDots = () => {
+      if (!dotsWrap) return;
+      const pages = pageCount();
+      const idx = Math.min(
+        pages - 1,
+        Math.max(0, Math.round(track.scrollLeft / Math.max(track.clientWidth, 1)))
+      );
+      Array.from(dotsWrap.children).forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+    };
+
+    if (prev) {
+      prev.addEventListener('click', () => {
+        track.scrollBy({ left: -step(), behavior: 'smooth' });
+      });
+    }
+    if (next) {
+      next.addEventListener('click', () => {
+        track.scrollBy({ left: step(), behavior: 'smooth' });
+      });
+    }
+    track.addEventListener('scroll', () => {
+      window.clearTimeout(track._newsDotTimer);
+      track._newsDotTimer = window.setTimeout(syncDots, 80);
+    }, { passive: true });
+    window.addEventListener('resize', renderDots);
+    renderDots();
+  });
+})();

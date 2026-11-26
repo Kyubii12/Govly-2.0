@@ -5,8 +5,9 @@ $officials = [];
 $anns = [];
 $services = $site['services'] ?? [];
 try {
+    ensure_announcements_schema();
     $officials = db_all('SELECT * FROM officials ORDER BY order_num, name');
-    $anns = db_all('SELECT * FROM announcements ORDER BY created_at DESC LIMIT 6');
+    $anns = db_all('SELECT * FROM announcements ORDER BY featured DESC, created_at DESC LIMIT 12');
 } catch (Throwable $e) {}
 $captains = array_values(array_filter($officials, fn($o) => $o['position'] === 'Punong Barangay'));
 $kagawads = array_values(array_filter($officials, fn($o) => $o['position'] === 'Kagawad'));
@@ -122,7 +123,7 @@ require __DIR__ . '/_nav.php';
     </div>
   </section>
 
-  <section id="announcements" class="page-section" style="background:#f8f9fa">
+  <section id="announcements" class="page-section news-section">
     <div class="container-xl px-3">
       <div class="section-intro text-center">
         <span class="pill pill-red">Latest News</span>
@@ -132,23 +133,41 @@ require __DIR__ . '/_nav.php';
       <?php if (!$anns): ?>
         <p class="text-center text-muted">No announcements yet.</p>
       <?php else: ?>
-        <div class="row g-4">
-          <div class="col-12 col-md-8">
-            <div class="p-4 text-white rounded-3" style="background:linear-gradient(135deg,#003d82,#005ba3)">
-              <span class="badge mb-2" style="background:#ffc107;color:#003d82">FEATURED</span>
-              <h3 class="fw-bold"><?= h($anns[0]['title']) ?></h3>
-              <p><?= h(mb_substr((string)$anns[0]['body'], 0, 220)) ?>…</p>
-            </div>
-          </div>
-          <div class="col-12 col-md-4 d-flex flex-column gap-3">
-            <?php foreach (array_slice($anns, 1, 3) as $a): ?>
-              <div class="card-soft">
-                <div class="small fw-bold" style="color:#ffc107"><?= h(date('M j, Y', strtotime($a['created_at']))) ?></div>
-                <strong><?= h($a['title']) ?></strong>
-                <p class="small text-muted mb-0"><?= h(mb_substr((string)$a['body'], 0, 80)) ?>…</p>
-              </div>
+        <div class="news-carousel" data-news-carousel>
+          <button type="button" class="news-nav news-nav-prev" aria-label="Previous announcements" data-news-prev>‹</button>
+          <div class="news-track" data-news-track>
+            <?php foreach ($anns as $a):
+              $cover = trim((string) ($a['cover_path'] ?? ''));
+              $dateLabel = !empty($a['created_at']) ? date('F j, Y', strtotime((string) $a['created_at'])) : '';
+            ?>
+              <article class="news-card">
+                <a class="news-card-media" href="<?= h(base_url('announcement/' . (int) $a['id'])) ?>">
+                  <?php if ($cover !== ''): ?>
+                    <img src="<?= h(base_url($cover)) ?>" alt="<?= h($a['title']) ?>" loading="lazy" />
+                  <?php else: ?>
+                    <div class="news-card-fallback">
+                      <span><?= !empty($a['featured']) ? 'Featured' : 'Barangay News' ?></span>
+                    </div>
+                  <?php endif; ?>
+                  <?php if (!empty($a['featured'])): ?>
+                    <span class="news-card-badge">Featured</span>
+                  <?php endif; ?>
+                </a>
+                <div class="news-card-body">
+                  <h3 class="news-card-title">
+                    <a href="<?= h(base_url('announcement/' . (int) $a['id'])) ?>"><?= h($a['title']) ?></a>
+                  </h3>
+                  <?php if ($dateLabel !== ''): ?>
+                    <p class="news-card-date"><?= h($dateLabel) ?></p>
+                  <?php endif; ?>
+                  <p class="news-card-excerpt"><?= h(announcement_excerpt($a, 110)) ?></p>
+                  <a class="news-card-link" href="<?= h(base_url('announcement/' . (int) $a['id'])) ?>">Read more</a>
+                </div>
+              </article>
             <?php endforeach; ?>
           </div>
+          <button type="button" class="news-nav news-nav-next" aria-label="Next announcements" data-news-next>›</button>
+          <div class="news-dots" data-news-dots></div>
         </div>
       <?php endif; ?>
     </div>
@@ -308,5 +327,5 @@ require __DIR__ . '/_nav.php';
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= h(base_url('assets/leaflet/leaflet.js')) ?>?v=7"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>?v=7"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=8"></script>
 </body></html>

@@ -505,18 +505,93 @@ function act_delete_template(): void
     redirect('admin?tab=certificates');
 }
 
+function save_announcement_image(string $field): ?string
+{
+    $name = save_upload($field, dirname(__DIR__) . '/uploads/announcements');
+    return $name ? ('uploads/announcements/' . $name) : null;
+}
+
+/** @return list<string> */
+function save_announcement_gallery(string $field): array
+{
+    if (empty($_FILES[$field]['name']) || !is_array($_FILES[$field]['name'])) {
+        return [];
+    }
+    $saved = [];
+    $count = count($_FILES[$field]['name']);
+    for ($i = 0; $i < $count && $i < 8; $i++) {
+        if (empty($_FILES[$field]['tmp_name'][$i]) || !is_uploaded_file($_FILES[$field]['tmp_name'][$i])) {
+            continue;
+        }
+        if (($_FILES[$field]['size'][$i] ?? 0) > 5 * 1024 * 1024) {
+            continue;
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($_FILES[$field]['tmp_name'][$i]);
+        $map = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        if (!isset($map[$mime])) {
+            continue;
+        }
+        $dir = dirname(__DIR__) . '/uploads/announcements';
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $name = bin2hex(random_bytes(8)) . '.' . $map[$mime];
+        $dest = $dir . DIRECTORY_SEPARATOR . $name;
+        if (move_uploaded_file($_FILES[$field]['tmp_name'][$i], $dest)) {
+            $saved[] = 'uploads/announcements/' . $name;
+        }
+    }
+    return $saved;
+}
+
 function act_save_announcement(): void
 {
     require_admin();
-    db_insert('INSERT INTO announcements (title, body) VALUES (?,?)', [post('title'), post('body')]);
-    log_activity('Posted announcement', post('title'));
-    flash('success', 'Announcement posted.');
+    ensure_announcements_schema();
+    $id = (int) post('id');
+    $title = trim(post('title'));
+    $body = trim((string) ($_POST['body'] ?? ''));
+    $featured = !empty($_POST['featured']) ? 1 : 0;
+    if ($title === '') {
+        throw new RuntimeException('Enter an announcement title.');
+    }
+    $cover = save_announcement_image('cover');
+    $newGallery = save_announcement_gallery('gallery');
+    $keepGallery = array_values(array_filter(array_map('trim', (array) ($_POST['keep_gallery'] ?? []))));
+
+    if ($featured) {
+        db_exec('UPDATE announcements SET featured = 0');
+    }
+
+    if ($id > 0) {
+        $prev = db_one('SELECT * FROM announcements WHERE id = ?', [$id]);
+        if (!$prev) {
+            throw new RuntimeException('Announcement not found.');
+        }
+        $coverPath = $cover ?: ($prev['cover_path'] ?? null);
+        $gallery = array_values(array_unique(array_merge($keepGallery, $newGallery)));
+        db_exec(
+            'UPDATE announcements SET title = ?, body = ?, cover_path = ?, gallery_json = ?, featured = ?, updated_at = NOW() WHERE id = ?',
+            [$title, $body, $coverPath, $gallery ? json_encode($gallery) : null, $featured, $id]
+        );
+        log_activity('Updated announcement', $title);
+        flash('success', 'Announcement updated.');
+    } else {
+        db_insert(
+            'INSERT INTO announcements (title, body, cover_path, gallery_json, featured) VALUES (?,?,?,?,?)',
+            [$title, $body, $cover, $newGallery ? json_encode($newGallery) : null, $featured]
+        );
+        log_activity('Posted announcement', $title);
+        flash('success', 'Announcement posted.');
+    }
     redirect('admin?tab=announcements');
 }
 
 function act_delete_announcement(): void
 {
     require_admin();
+    ensure_announcements_schema();
     db_exec('DELETE FROM announcements WHERE id = ?', [(int) post('id')]);
     flash('success', 'Announcement removed.');
     redirect('admin?tab=announcements');

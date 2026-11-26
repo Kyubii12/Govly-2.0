@@ -8,8 +8,10 @@ app/config.php
 uploads/ids/*
 uploads/selfies/*
 uploads/officials/*
+uploads/announcements/*
 !uploads/ids/.gitkeep
 !uploads/selfies/.gitkeep
 !uploads/officials/.gitkeep
+!uploads/announcements/.gitkeep
 
 _old_simple/

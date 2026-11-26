@@ -49,3 +49,4 @@ jobs:
             **/uploads/ids/**
             **/uploads/selfies/**
             **/uploads/officials/**
+            **/uploads/announcements/**

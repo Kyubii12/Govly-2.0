@@ -72,7 +72,7 @@ $pageSubs = [
   'requests' => 'Process certificate requests, print documents, and send notices.',
   'activity' => 'Track admin actions across the barangay system.',
   'certificates' => 'Edit certificate templates used for official printing.',
-  'announcements' => 'Create, schedule, and publish barangay announcements.',
+  'announcements' => 'Publish news with a cover photo, story, and gallery for the public homepage.',
   'officials' => 'Maintain barangay officials and positions.',
   'website' => 'Update public service prices and contact details.',
   'admins' => 'Manage account preferences, system configuration, and admin access.',
@@ -1625,27 +1625,135 @@ $pageSubs = [
       <?php endif; ?>
 
 <?php elseif ($tab === 'announcements'):
-  $rows = db_all('SELECT * FROM announcements ORDER BY created_at DESC');
+  ensure_announcements_schema();
+  $rows = db_all('SELECT * FROM announcements ORDER BY featured DESC, created_at DESC');
+  $editId = (int) ($_GET['edit'] ?? 0);
+  $edit = $editId > 0 ? db_one('SELECT * FROM announcements WHERE id = ?', [$editId]) : null;
+  $editGallery = $edit ? announcement_gallery($edit) : [];
 ?>
-      <div class="bg-white rounded-4 shadow-sm border p-4 mb-3">
-        <form method="post" class="row g-3">
+      <div class="admin-panel mb-3" id="announcementForm">
+        <div class="admin-panel-head">
+          <div>
+            <h2 class="admin-panel-title"><?= $edit ? 'Edit announcement' : 'New announcement' ?></h2>
+            <p class="admin-panel-sub">Add a cover photo, story, and optional gallery for the public News section.</p>
+          </div>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="p-3 row g-3">
           <input type="hidden" name="action" value="save_announcement" />
-          <div class="col-12"><input class="form-control" name="title" required placeholder="Title" /></div>
-          <div class="col-12"><textarea class="form-control" name="body" rows="4" placeholder="Body"></textarea></div>
-          <div class="col-12"><button class="btn fw-semibold" style="background:#003d82;color:#fff" type="submit">Post</button></div>
+          <input type="hidden" name="id" value="<?= $edit ? (int) $edit['id'] : 0 ?>" />
+          <div class="col-12">
+            <label class="form-label small fw-semibold">Title</label>
+            <input class="form-control" name="title" required maxlength="190" value="<?= h($edit['title'] ?? '') ?>" placeholder="Announcement title" />
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-semibold">Body</label>
+            <textarea class="form-control" name="body" rows="7" placeholder="Write the full announcement"><?= h($edit['body'] ?? '') ?></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold">Cover photo</label>
+            <input class="form-control" type="file" name="cover" accept="image/jpeg,image/png,image/webp" <?= $edit ? '' : '' ?> />
+            <div class="form-text">JPG, PNG, or WebP. Shown on the homepage cards and detail page.</div>
+            <?php if (!empty($edit['cover_path'])): ?>
+              <img src="<?= h(base_url($edit['cover_path'])) ?>" alt="" class="mt-2 rounded-3 border" style="width:160px;height:100px;object-fit:cover" />
+            <?php endif; ?>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold">Gallery photos</label>
+            <input class="form-control" type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp" multiple />
+            <div class="form-text">Optional. Up to 8 extra photos for the detail page.</div>
+            <?php if ($editGallery): ?>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <?php foreach ($editGallery as $gPath): ?>
+                  <label class="d-block text-center" style="width:88px">
+                    <img src="<?= h(base_url($gPath)) ?>" alt="" class="rounded-2 border mb-1" style="width:88px;height:66px;object-fit:cover" />
+                    <span class="small d-block">
+                      <input type="checkbox" name="keep_gallery[]" value="<?= h($gPath) ?>" checked /> Keep
+                    </span>
+                  </label>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="featuredAnnouncement" name="featured" value="1" <?= !empty($edit['featured']) ? 'checked' : '' ?> />
+              <label class="form-check-label fw-semibold" for="featuredAnnouncement">Mark as featured</label>
+            </div>
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button class="btn btn-admin-primary" type="submit"><?= $edit ? 'Save changes' : 'Publish announcement' ?></button>
+            <?php if ($edit): ?>
+              <a class="btn btn-outline-secondary" href="<?= h(base_url('admin?tab=announcements')) ?>">Cancel edit</a>
+            <?php endif; ?>
+          </div>
         </form>
       </div>
-      <?php foreach ($rows as $r): ?>
-        <div class="bg-white rounded-4 shadow-sm border p-4 mb-3">
-          <strong><?= h($r['title']) ?></strong>
-          <p class="mb-2 mt-2"><?= nl2br(h($r['body'])) ?></p>
-          <form method="post">
-            <input type="hidden" name="action" value="delete_announcement" />
-            <input type="hidden" name="id" value="<?= (int) $r['id'] ?>" />
-            <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
-          </form>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <h2 class="admin-panel-title">Published announcements</h2>
+            <p class="admin-panel-sub"><?= count($rows) ?> total</p>
+          </div>
         </div>
-      <?php endforeach; ?>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Cover</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if (!$rows): ?>
+                <tr><td colspan="5" class="text-center text-muted py-4">No announcements yet.</td></tr>
+              <?php else: foreach ($rows as $r):
+                $cover = trim((string) ($r['cover_path'] ?? ''));
+                $galleryCount = count(announcement_gallery($r));
+              ?>
+                <tr>
+                  <td style="width:90px">
+                    <?php if ($cover !== ''): ?>
+                      <img src="<?= h(base_url($cover)) ?>" alt="" style="width:72px;height:48px;object-fit:cover;border-radius:.45rem;border:1px solid #e2e8f0" />
+                    <?php else: ?>
+                      <div class="text-muted small">No photo</div>
+                    <?php endif; ?>
+                  </td>
+                  <td>
+                    <div class="fw-semibold"><?= h($r['title']) ?></div>
+                    <div class="text-muted small"><?= h(announcement_excerpt($r, 90)) ?></div>
+                    <?php if ($galleryCount): ?>
+                      <div class="text-muted" style="font-size:.72rem"><?= (int) $galleryCount ?> gallery photo<?= $galleryCount === 1 ? '' : 's' ?></div>
+                    <?php endif; ?>
+                  </td>
+                  <td class="text-muted small text-nowrap"><?= h(!empty($r['created_at']) ? date('M j, Y', strtotime((string) $r['created_at'])) : '—') ?></td>
+                  <td>
+                    <?php if (!empty($r['featured'])): ?>
+                      <span class="badge rounded-pill" style="background:#fef3c7;color:#92400e">Featured</span>
+                    <?php else: ?>
+                      <span class="badge rounded-pill" style="background:#e2e8f0;color:#334155">Published</span>
+                    <?php endif; ?>
+                  </td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1">
+                      <a class="btn btn-sm rounded-pill fw-semibold" style="background:#eef2ff;color:#3730a3" href="<?= h(base_url('announcement/' . (int) $r['id'])) ?>" target="_blank" rel="noopener">View</a>
+                      <a class="btn btn-sm rounded-pill fw-semibold" style="background:#dbeafe;color:#1e40af" href="<?= h(base_url('admin?tab=announcements&edit=' . (int) $r['id'])) ?>#announcementForm">Edit</a>
+                      <form method="post" class="d-inline" onsubmit="return confirm('Delete this announcement?')">
+                        <input type="hidden" name="action" value="delete_announcement" />
+                        <input type="hidden" name="id" value="<?= (int) $r['id'] ?>" />
+                        <button class="btn btn-sm rounded-pill fw-semibold" style="background:#fee2e2;color:#991b1b" type="submit">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; endif; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
 <?php elseif ($tab === 'officials'):
   $rows = db_all('SELECT * FROM officials ORDER BY order_num, name');

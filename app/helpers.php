@@ -645,6 +645,58 @@ function route(): string
     return $r === '' ? 'home' : $r;
 }
 
+function ensure_announcements_schema(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    try {
+        $cols = array_column(db_all('SHOW COLUMNS FROM announcements'), 'Field');
+        if (!in_array('cover_path', $cols, true)) {
+            db_exec('ALTER TABLE announcements ADD COLUMN cover_path VARCHAR(255) NULL AFTER body');
+        }
+        if (!in_array('gallery_json', $cols, true)) {
+            db_exec('ALTER TABLE announcements ADD COLUMN gallery_json TEXT NULL AFTER cover_path');
+        }
+        if (!in_array('featured', $cols, true)) {
+            db_exec('ALTER TABLE announcements ADD COLUMN featured TINYINT(1) NOT NULL DEFAULT 0 AFTER gallery_json');
+        }
+        if (!in_array('updated_at', $cols, true)) {
+            db_exec('ALTER TABLE announcements ADD COLUMN updated_at DATETIME NULL AFTER created_at');
+        }
+    } catch (Throwable $e) {
+        // First install or locked permissions — schema.sql still defines the full table.
+    }
+}
+
+/** @return list<string> */
+function announcement_gallery(array $row): array
+{
+    $raw = $row['gallery_json'] ?? '';
+    if ($raw === '' || $raw === null) {
+        return [];
+    }
+    $decoded = json_decode((string) $raw, true);
+    if (!is_array($decoded)) {
+        return [];
+    }
+    return array_values(array_filter(array_map(static fn($p) => trim((string) $p), $decoded)));
+}
+
+function announcement_excerpt(array $row, int $len = 140): string
+{
+    $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($row['body'] ?? ''))) ?? '');
+    if ($text === '') {
+        return '';
+    }
+    if (mb_strlen($text) <= $len) {
+        return $text;
+    }
+    return rtrim(mb_substr($text, 0, $len - 1)) . '…';
+}
+
 function log_activity(string $action, string $detail = ''): void
 {
     $u = current_user();
