@@ -8,14 +8,22 @@ $title = $title ?? ($GLOBALS['CONFIG']['app_name'] ?? 'GovLy 2.0');
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= h($title) ?></title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('govly-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="icon" type="image/png" href="<?= h(base_url('assets/sta-cruz.png')) ?>" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <meta name="theme-color" content="#0038A8" />
   <link rel="stylesheet" href="<?= h(base_url('assets/leaflet/leaflet.css')) ?>?v=7" />
-  <link rel="stylesheet" href="<?= h(base_url('assets/finale.css')) ?>?v=15" />
-  <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>?v=17" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/finale.css')) ?>?v=16" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/govly2.css')) ?>?v=18" />
   <?php if (!empty($adminLayout)): ?>
-  <link rel="stylesheet" href="<?= h(base_url('assets/admin-ui.css')) ?>?v=22" />
+  <link rel="stylesheet" href="<?= h(base_url('assets/admin-ui.css')) ?>?v=23" />
   <style>
     /* Admin must scroll with the page — never lock html/body to the viewport */
     html:has(body.admin-page) {
@@ -30,6 +38,12 @@ $title = $title ?? ($GLOBALS['CONFIG']['app_name'] ?? 'GovLy 2.0');
       min-height: 100dvh !important;
       overflow-x: hidden !important;
       overflow-y: visible !important;
+    }
+    html[data-theme="dark"] body.admin-page,
+    html[data-theme="dark"] body.admin-page .admin-shell,
+    html[data-theme="dark"] body.admin-page .admin-content {
+      background: #0b1220 !important;
+      color: #e2e8f0;
     }
     body.admin-page .flash {
       position: fixed; top: 12px; right: 12px; z-index: 2000;

@@ -2135,7 +2135,7 @@ html[data-theme="dark"] {
 }
 html[data-theme="dark"] body,
 html[data-theme="dark"] #root {
-  background: #0f172a !important;
+  background: #0b1220 !important;
   color: #e2e8f0;
 }
 html[data-theme="dark"] .bg-white,
@@ -2145,7 +2145,8 @@ html[data-theme="dark"] .table,
 html[data-theme="dark"] .form-control,
 html[data-theme="dark"] .form-select,
 html[data-theme="dark"] .admin-topbar,
-html[data-theme="dark"] .rounded-4.shadow-sm {
+html[data-theme="dark"] .rounded-4.shadow-sm,
+html[data-theme="dark"] .dropdown-menu {
   background: #1e293b !important;
   color: #e2e8f0 !important;
   border-color: #334155 !important;

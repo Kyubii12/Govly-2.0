@@ -2317,7 +2317,7 @@ $pageSubs = [
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>?v=8"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=11"></script>
 <script>
 (function () {
   var sidebar = document.getElementById('sidebar');
@@ -2336,13 +2336,17 @@ $pageSubs = [
 
   var themeBtn = document.getElementById('adminThemeToggle');
   function applyTheme(mode) {
-    document.documentElement.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
-    try { localStorage.setItem('govly-theme', mode); } catch (e) {}
+    var dark = mode === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    try { localStorage.setItem('govly-theme', dark ? 'dark' : 'light'); } catch (e) {}
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#0b1220' : '#0038A8');
     if (themeBtn) {
-      themeBtn.innerHTML = mode === 'dark'
+      themeBtn.innerHTML = dark
         ? <?= json_encode(admin_icon('sun', 16)) ?>
         : <?= json_encode(admin_icon('moon', 16)) ?>;
-      themeBtn.title = mode === 'dark' ? 'Light mode' : 'Night mode';
+      themeBtn.title = dark ? 'Light mode' : 'Night mode';
+      themeBtn.setAttribute('aria-label', dark ? 'Light mode' : 'Night mode');
     }
   }
   var saved = 'light';

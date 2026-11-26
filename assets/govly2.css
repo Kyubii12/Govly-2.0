@@ -452,14 +452,7 @@ table.data th { background: #eef4fb; color: #003d82; }
   }
 }
 
-html[data-theme="dark"] body { background: #0b1220; color: #e5e7eb; }
-html[data-theme="dark"] .service-tile,
-html[data-theme="dark"] .card-soft,
-html[data-theme="dark"] .auth-card,
-html[data-theme="dark"] .official-card,
-html[data-theme="dark"] table.data,
-html[data-theme="dark"] .verify-card { background: #111827; border-color: #1f2937; color: #e5e7eb; }
-html[data-theme="dark"] table.data th { background: #0f172a; color: #93c5fd; }
+/* Base dark tokens — detailed component dark styles are at file end */
 
 @media print {
   .no-print, .flash, .site-nav, .nav-spacer, .side { display: none !important; }
@@ -891,4 +884,132 @@ html[data-theme="dark"] table.data th { background: #0f172a; color: #93c5fd; }
     width: 64px;
     height: 64px;
   }
+}
+
+/* ── Dark mode (public + shared) ── */
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+html[data-theme="dark"] body {
+  background: #0b1220 !important;
+  color: #e5e7eb;
+}
+html[data-theme="dark"] .page-section,
+html[data-theme="dark"] .bac-section-alt,
+html[data-theme="dark"] .news-section,
+html[data-theme="dark"] .emergency-preview-section,
+html[data-theme="dark"] .emergency-page {
+  background: #0b1220 !important;
+}
+html[data-theme="dark"] .bac-heading { color: #93c5fd !important; }
+html[data-theme="dark"] .bac-lead,
+html[data-theme="dark"] .text-muted { color: #94a3b8 !important; }
+html[data-theme="dark"] .pill-blue { background: #1e3a5f; color: #93c5fd; }
+html[data-theme="dark"] .pill-purple { background: #3b0764; color: #e9d5ff; }
+html[data-theme="dark"] .pill-red { background: #450a0a; color: #fecaca; }
+html[data-theme="dark"] .pill-orange { background: #431407; color: #fdba74; }
+
+html[data-theme="dark"] .service-tile,
+html[data-theme="dark"] .card-soft,
+html[data-theme="dark"] .auth-card,
+html[data-theme="dark"] .official-card,
+html[data-theme="dark"] table.data,
+html[data-theme="dark"] .verify-card,
+html[data-theme="dark"] .news-card,
+html[data-theme="dark"] .announcement-more-card,
+html[data-theme="dark"] .hotline-card {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .28) !important;
+}
+html[data-theme="dark"] table.data th { background: #0f172a; color: #93c5fd; }
+html[data-theme="dark"] .service-tile h3,
+html[data-theme="dark"] .service-tile .fw-bold,
+html[data-theme="dark"] .official-card .fw-semibold,
+html[data-theme="dark"] .news-card-title,
+html[data-theme="dark"] .news-card-title a,
+html[data-theme="dark"] .announcement-more-card strong,
+html[data-theme="dark"] .emergency-preview-item h3 {
+  color: #f1f5f9 !important;
+}
+html[data-theme="dark"] .news-card-excerpt,
+html[data-theme="dark"] .news-card-date,
+html[data-theme="dark"] .emergency-preview-item a {
+  color: #94a3b8 !important;
+}
+html[data-theme="dark"] .emergency-preview-item a:hover,
+html[data-theme="dark"] .news-card-title a:hover {
+  color: #93c5fd !important;
+}
+html[data-theme="dark"] .emergency-preview-logo,
+html[data-theme="dark"] .emergency-preview-badge {
+  border-color: #1f2937;
+  background-color: #0f172a;
+}
+html[data-theme="dark"] .bac-map-frame {
+  border-color: #334155 !important;
+  background: #1e293b !important;
+}
+html[data-theme="dark"] .bac-hotline:not(.bac-hotline-more) {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  border-left-color: #60a5fa !important;
+}
+html[data-theme="dark"] .bac-hotline:not(.bac-hotline-more) .bac-hotline-num { color: #93c5fd; }
+html[data-theme="dark"] .bac-hotline:not(.bac-hotline-more) .bac-hotline-name { color: #e2e8f0; }
+html[data-theme="dark"] .bac-hotline:not(.bac-hotline-more) .bac-hotline-net { color: #94a3b8; }
+
+html[data-theme="dark"] .dropdown-menu {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+html[data-theme="dark"] .dropdown-item { color: #e2e8f0 !important; }
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:focus {
+  background: #334155 !important;
+  color: #fff !important;
+}
+html[data-theme="dark"] .dropdown-header {
+  background: #0f172a !important;
+  color: #93c5fd !important;
+}
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+html[data-theme="dark"] .form-control::placeholder { color: #64748b; }
+html[data-theme="dark"] .auth-page,
+html[data-theme="dark"] .dashboard-page {
+  background: #0b1220 !important;
+}
+html[data-theme="dark"] .flash.ok { background: #14532d; color: #bbf7d0; }
+html[data-theme="dark"] .flash.err { background: #7f1d1d; color: #fecaca; }
+html[data-theme="dark"] .flash.info { background: #0c4a6e; color: #bae6fd; }
+
+html[data-theme="dark"] .announcement-page {
+  background: #0b1220 !important;
+}
+html[data-theme="dark"] .announcement-back { color: #93c5fd !important; }
+html[data-theme="dark"] .announcement-title,
+html[data-theme="dark"] .announcement-gallery h2,
+html[data-theme="dark"] .announcement-more h2 {
+  color: #f1f5f9 !important;
+}
+html[data-theme="dark"] .announcement-date,
+html[data-theme="dark"] .announcement-copy {
+  color: #cbd5e1 !important;
+}
+html[data-theme="dark"] .announcement-article,
+html[data-theme="dark"] .announcement-layout {
+  color: #e2e8f0;
+}
+html[data-theme="dark"] .news-nav button {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
 }

@@ -306,5 +306,5 @@ require __DIR__ . '/_nav.php';
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= h(base_url('assets/govly2.js')) ?>?v=10"></script>
+<script src="<?= h(base_url('assets/govly2.js')) ?>?v=11"></script>
 </body></html>

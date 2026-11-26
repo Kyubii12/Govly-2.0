@@ -1,17 +1,27 @@
 (function () {
   const root = document.documentElement;
   const saved = localStorage.getItem('govly-theme') || 'light';
-  root.setAttribute('data-theme', saved);
+
+  function syncThemeChrome(mode) {
+    const dark = mode === 'dark';
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#0b1220' : '#0038A8');
+    document.querySelectorAll('#themeToggle').forEach((btn) => {
+      btn.textContent = dark ? '☀' : '☾';
+      btn.title = dark ? 'Light mode' : 'Night mode';
+      btn.setAttribute('aria-label', dark ? 'Light mode' : 'Night mode');
+    });
+  }
+
+  syncThemeChrome(saved);
 
   document.querySelectorAll('#themeToggle').forEach((btn) => {
     btn.addEventListener('click', () => {
       const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
       localStorage.setItem('govly-theme', next);
-      btn.textContent = next === 'dark' ? '☀' : '☾';
-      btn.title = next === 'dark' ? 'Light mode' : 'Night mode';
+      syncThemeChrome(next);
     });
-    btn.textContent = root.getAttribute('data-theme') === 'dark' ? '☀' : '☾';
   });
 
   // Exact Capstone Finale HeroMap.jsx
