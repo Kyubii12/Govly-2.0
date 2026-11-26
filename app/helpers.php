@@ -20,7 +20,7 @@ function base_url(string $path = ''): string
     return $scheme . '://' . $host . ($dir === '' || $dir === '/' ? '' : $dir) . '/' . ltrim($path, '/');
 }
 
-function redirect(string $path): void
+function redirect(string $path): never
 {
     header('Location: ' . (str_starts_with($path, 'http') ? $path : base_url($path)));
     exit;
@@ -55,13 +55,85 @@ function cert_types(): array
         'Barangay Clearance', 'Certificate of Residency', 'Certificate of Indigency',
         'Business Permit', 'Solo Parent ID Application', 'Solo Parent Assistance',
     ];
+    $types = $fallback;
     try {
         $rows = db_all('SELECT type FROM cert_templates ORDER BY type');
-        $types = array_column($rows, 'type');
-        return $types ?: $fallback;
+        foreach (array_column($rows, 'type') as $t) {
+            $t = trim((string) $t);
+            if ($t !== '' && !in_array($t, $types, true)) {
+                $types[] = $t;
+            }
+        }
+    } catch (Throwable $e) {
+        // keep fallbacks
+    }
+    try {
+        foreach ((site()['services'] ?? []) as $s) {
+            $t = trim((string) ($s['type'] ?? ''));
+            if ($t !== '' && !in_array($t, $types, true)) {
+                $types[] = $t;
+            }
+        }
+    } catch (Throwable $e) {
+        // ignore
+    }
+    return $types;
+}
+
+function default_cert_template(string $type = ''): array
+{
+    $defaults = [
+        'Barangay Clearance' => [
+            'body' => 'This is to certify that RESIDENT NAME, of legal age, is a bona fide resident of ADDRESS and is known to this office to be a person of good moral character, with no pending complaint or derogatory record on file in this barangay.',
+        ],
+        'Certificate of Residency' => [
+            'body' => 'This is to certify that RESIDENT NAME, of legal age, is a bona fide resident of ADDRESS.',
+        ],
+        'Certificate of Indigency' => [
+            'body' => 'This is to certify that RESIDENT NAME, of legal age, is a bona fide resident of ADDRESS and that their family had low income as considered an indigent family in this barangay.',
+        ],
+        'Business Permit' => [
+            'body' => 'This is to certify that RESIDENT NAME, a bona fide resident of ADDRESS, is granted barangay clearance in connection with a business application as stated below.',
+        ],
+        'Solo Parent ID Application' => [
+            'body' => 'This is to certify that RESIDENT NAME, a bona fide resident of ADDRESS, is a qualified solo parent of this barangay.',
+        ],
+        'Solo Parent Assistance' => [
+            'body' => 'This is to certify that RESIDENT NAME, a bona fide resident of ADDRESS, is a qualified solo parent and may be considered for assistance programs of this barangay.',
+        ],
+    ];
+    $blank = [
+        'body' => 'This is to certify that RESIDENT NAME, of legal age, is a bona fide resident of ADDRESS.',
+        'purpose' => '',
+        'details' => '',
+        'closing' => 'This certification is issued upon the request of the party concerned for intents and purposes it may serve.',
+    ];
+    if (isset($defaults[$type])) {
+        return array_merge($blank, $defaults[$type]);
+    }
+    return $blank;
+}
+
+function get_cert_template(string $type): array
+{
+    $fallback = default_cert_template($type);
+    if ($type === '') {
+        return $fallback;
+    }
+    try {
+        $row = db_one('SELECT * FROM cert_templates WHERE type = ?', [$type]);
     } catch (Throwable $e) {
         return $fallback;
     }
+    if (!$row) {
+        return $fallback;
+    }
+    return [
+        'body' => ($row['body'] ?? '') !== '' ? $row['body'] : $fallback['body'],
+        'purpose' => $row['purpose'] ?? $fallback['purpose'],
+        'details' => $row['details'] ?? $fallback['details'],
+        'closing' => ($row['closing'] ?? '') !== '' ? $row['closing'] : $fallback['closing'],
+    ];
 }
 
 function default_site(): array
@@ -74,6 +146,15 @@ function default_site(): array
         'contactEmail' => 'brgy.stacruz@bacnotan.gov.ph',
         'officeHours' => "Monday – Friday: 8:00 AM – 5:00 PM\nSaturday: 8:00 AM – 12:00 PM",
         'footerLocation' => 'Bacnotan, La Union',
+        'barangayName' => 'Barangay Sta. Cruz',
+        'municipality' => 'Bacnotan',
+        'province' => 'La Union',
+        'systemLanguage' => 'English',
+        'timeZone' => 'Asia/Manila',
+        'dateFormat' => 'F j, Y',
+        'enableNotifications' => '1',
+        'autoSaveRecords' => '1',
+        'publicAnnouncementAlerts' => '1',
         'services' => [
             ['type' => 'Barangay Clearance', 'price' => '₱50.00', 'time' => '1-2 days', 'desc' => 'Official clearance certificate for employment, business, and legal purposes.'],
             ['type' => 'Certificate of Residency', 'price' => '₱50.00', 'time' => '1-2 days', 'desc' => 'Proof of residence for government transactions and applications.'],
@@ -112,8 +193,12 @@ function site(): array
     if (!is_array($saved)) {
         return $base;
     }
-    foreach (['emergencyCall', 'emergencyLead', 'officeAddress', 'contactPhones', 'contactEmail', 'officeHours', 'footerLocation'] as $k) {
-        if (!empty($saved[$k])) {
+    foreach ([
+        'emergencyCall', 'emergencyLead', 'officeAddress', 'contactPhones', 'contactEmail', 'officeHours', 'footerLocation',
+        'barangayName', 'municipality', 'province', 'systemLanguage', 'timeZone', 'dateFormat',
+        'enableNotifications', 'autoSaveRecords', 'publicAnnouncementAlerts',
+    ] as $k) {
+        if (array_key_exists($k, $saved) && $saved[$k] !== '' && $saved[$k] !== null) {
             $base[$k] = $saved[$k];
         }
     }
@@ -152,15 +237,196 @@ function age_from_birth(?string $date): ?int
 function age_group(?int $age): string
 {
     if ($age === null) {
-        return 'Unknown';
+        return 'unknown';
     }
     if ($age < 18) {
-        return '0-17';
+        return 'minor';
     }
-    if ($age < 60) {
-        return '18-59';
+    if ($age >= 60) {
+        return 'senior';
     }
-    return '60+';
+    return 'other';
+}
+
+function age_group_label(?string $group): string
+{
+    return match ($group) {
+        'minor' => 'Minor',
+        'senior' => 'Senior citizen',
+        'other' => '18–59',
+        'unknown' => 'No age',
+        default => 'No age',
+    };
+}
+
+function is_super_admin(?array $user): bool
+{
+    if (!$user) {
+        return false;
+    }
+    $email = strtolower((string) ($user['email'] ?? ''));
+    return ($user['role'] ?? '') === 'super_admin' || $email === 'admin@brgy.com';
+}
+
+function role_label(?array $user): string
+{
+    if (is_super_admin($user)) {
+        return 'Super Admin';
+    }
+    if (is_admin_user($user)) {
+        return 'Admin';
+    }
+    return 'Resident';
+}
+
+function psa_individual_bands(): array
+{
+    return [
+        ['id' => 'u1', 'label' => 'Under 1', 'min' => 0, 'max' => 0],
+        ['id' => '1-4', 'label' => '1 to 4', 'min' => 1, 'max' => 4],
+        ['id' => '5-9', 'label' => '5 to 9', 'min' => 5, 'max' => 9],
+        ['id' => '10-14', 'label' => '10 to 14', 'min' => 10, 'max' => 14],
+        ['id' => '15-19', 'label' => '15 to 19', 'min' => 15, 'max' => 19],
+        ['id' => '20-24', 'label' => '20 to 24', 'min' => 20, 'max' => 24],
+        ['id' => '25-29', 'label' => '25 to 29', 'min' => 25, 'max' => 29],
+        ['id' => '30-34', 'label' => '30 to 34', 'min' => 30, 'max' => 34],
+        ['id' => '35-39', 'label' => '35 to 39', 'min' => 35, 'max' => 39],
+        ['id' => '40-44', 'label' => '40 to 44', 'min' => 40, 'max' => 44],
+        ['id' => '45-49', 'label' => '45 to 49', 'min' => 45, 'max' => 49],
+        ['id' => '50-54', 'label' => '50 to 54', 'min' => 50, 'max' => 54],
+        ['id' => '55-59', 'label' => '55 to 59', 'min' => 55, 'max' => 59],
+        ['id' => '60-64', 'label' => '60 to 64', 'min' => 60, 'max' => 64],
+        ['id' => '65-69', 'label' => '65 to 69', 'min' => 65, 'max' => 69],
+        ['id' => '70-74', 'label' => '70 to 74', 'min' => 70, 'max' => 74],
+        ['id' => '75-79', 'label' => '75 to 79', 'min' => 75, 'max' => 79],
+        ['id' => '80+', 'label' => '80 and over', 'min' => 80, 'max' => 200],
+    ];
+}
+
+function psa_broad_bands(): array
+{
+    return [
+        ['id' => '0-14', 'label' => '0 to 14', 'min' => 0, 'max' => 14],
+        ['id' => '15-64', 'label' => '15 to 64', 'min' => 15, 'max' => 64],
+        ['id' => '65+', 'label' => '65 and over', 'min' => 65, 'max' => 200],
+    ];
+}
+
+/** @param list<array{birth_date?:?string}|int|null> $rows */
+function census_age_stats(array $rows, array $bands): array
+{
+    $ages = [];
+    foreach ($rows as $r) {
+        if (is_int($r) || is_float($r)) {
+            $ages[] = (int) $r;
+            continue;
+        }
+        if (!is_array($r)) {
+            continue;
+        }
+        if (isset($r['age']) && $r['age'] !== null && $r['age'] !== '') {
+            $ages[] = (int) $r['age'];
+            continue;
+        }
+        $age = age_from_birth($r['birth_date'] ?? null);
+        if ($age !== null) {
+            $ages[] = $age;
+        }
+    }
+    $total = count($ages);
+    $counts = [];
+    foreach ($bands as $band) {
+        $count = 0;
+        foreach ($ages as $age) {
+            if ($age >= $band['min'] && $age <= $band['max']) {
+                $count++;
+            }
+        }
+        $counts[] = $band + [
+            'count' => $count,
+            'pct' => $total ? ($count / $total) * 100 : 0.0,
+        ];
+    }
+    $young = count(array_filter($ages, fn($a) => $a <= 14));
+    $working = count(array_filter($ages, fn($a) => $a >= 15 && $a <= 64));
+    $old = count(array_filter($ages, fn($a) => $a >= 65));
+    sort($ages);
+    $median = null;
+    if ($ages) {
+        $mid = intdiv(count($ages), 2);
+        $median = count($ages) % 2 ? $ages[$mid] : ($ages[$mid - 1] + $ages[$mid]) / 2;
+    }
+    $ratio = static fn(int $part): float => $working ? ($part / $working) * 100 : 0.0;
+    $max = 1;
+    foreach ($counts as $c) {
+        $max = max($max, (int) $c['count']);
+    }
+    return [
+        'total' => $total,
+        'counts' => $counts,
+        'max' => $max,
+        'youthDep' => $ratio($young),
+        'oldDep' => $ratio($old),
+        'totalDep' => $ratio($young + $old),
+        'median' => $median,
+    ];
+}
+
+function status_badge_style(?string $status): string
+{
+    $key = strtolower(trim((string) $status));
+    if ($key === 'pending') {
+        return 'background:#fef9c3;color:#92400e';
+    }
+    if ($key === 'in progress' || $key === 'approved') {
+        return $key === 'approved'
+            ? 'background:#dbeafe;color:#1e40af'
+            : 'background:#dbeafe;color:#1e40af';
+    }
+    if (in_array($key, ['completed', 'active'], true)) {
+        return 'background:#dcfce7;color:#166534';
+    }
+    return 'background:#fee2e2;color:#991b1b';
+}
+
+function admin_icon(string $name, int $size = 17): string
+{
+    $s = (string) $size;
+    $icons = [
+        'dashboard' => '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+        'registrations' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        'registered' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
+        'census' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        'requests' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+        'activity' => '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/>',
+        'certificates' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/>',
+        'announcements' => '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+        'officials' => '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+        'website' => '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+        'admins' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>',
+        'messages' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+        'globe' => '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+        'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+        'menu' => '<line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/>',
+        'x' => '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+        'moon' => '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+        'sun' => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
+        'refresh' => '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+        'eye' => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+        'plus' => '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+        'printer' => '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+        'trash' => '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+        'pencil' => '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        'history' => '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+        'receipt' => '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M10 16H8"/>',
+        'xcircle' => '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+        'bell' => '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+        'search' => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        'download' => '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+        'settings' => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+    ];
+    $path = $icons[$name] ?? $icons['dashboard'];
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' . $s . '" height="' . $s . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>';
 }
 
 function issued_today(): string
@@ -295,6 +561,19 @@ function post(string $key, string $default = ''): string
     return trim((string) ($_POST[$key] ?? $default));
 }
 
+/** Parse website contact messages saved as Subject/Email/body. */
+function parse_contact_message(string $raw): ?array
+{
+    if (!preg_match('/^Subject:\s*(.+)\REmail:\s*(.+)\R(?:\R)?([\s\S]*)$/u', trim($raw), $m)) {
+        return null;
+    }
+    return [
+        'subject' => trim($m[1]),
+        'email' => trim($m[2]),
+        'body' => trim($m[3]),
+    ];
+}
+
 function route(): string
 {
     $r = trim((string) ($_GET['r'] ?? ''), '/');
@@ -335,14 +614,15 @@ function verify_email_otp(string $email, string $otp, string $purpose = 'registe
 {
     $cfg = $GLOBALS['CONFIG']['otp'] ?? [];
     $max = (int) ($cfg['max_attempts'] ?? 5);
+    // Compare expiry in MySQL (same clock as DATE_ADD(NOW()) used when creating OTPs).
+    // Do NOT use PHP strtotime() — Hostinger MySQL is often UTC while PHP is Asia/Manila.
     $row = db_one(
-        'SELECT * FROM email_otps WHERE email = ? AND purpose = ? AND consumed_at IS NULL ORDER BY id DESC LIMIT 1',
+        'SELECT * FROM email_otps
+         WHERE email = ? AND purpose = ? AND consumed_at IS NULL AND expires_at > NOW()
+         ORDER BY id DESC LIMIT 1',
         [$email, $purpose]
     );
     if (!$row) {
-        return false;
-    }
-    if (strtotime($row['expires_at']) < time()) {
         return false;
     }
     if ((int) $row['attempts'] >= $max) {

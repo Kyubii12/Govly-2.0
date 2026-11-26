@@ -11,7 +11,7 @@ require __DIR__ . '/_nav.php';
 <div class="auth-page">
   <form class="auth-card" method="post">
     <h2>Enter email OTP</h2>
-    <p class="text-muted">GovLy 2.0 sent a 6-digit code to <strong><?= h($email) ?></strong>. Expires in 10 minutes. No SMS.</p>
+    <p class="text-muted">Barangay Sta. Cruz sent a 6-digit code to <strong><?= h($email) ?></strong>. Expires in 10 minutes.</p>
     <input type="hidden" name="action" value="verify_otp" />
     <label class="form-label">OTP code</label>
     <input class="form-control text-center fw-bold fs-3" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus placeholder="123456" />

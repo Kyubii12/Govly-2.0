@@ -32,8 +32,7 @@ require __DIR__ . '/_nav.php';
       <div class="col-md-6"><label class="form-label">Password</label><input class="form-control" type="password" name="password" required minlength="8" /></div>
       <div class="col-md-6"><label class="form-label">Confirm password</label><input class="form-control" type="password" name="password2" required minlength="8" /></div>
     </div>
-    <div class="mt-2"><label class="form-label">Valid ID photo</label><input class="form-control" type="file" name="id_photo" accept="image/*" required /></div>
-    <div class="mt-2 mb-3"><label class="form-label">Selfie</label><input class="form-control" type="file" name="selfie" accept="image/*" required /></div>
+    <div class="mt-2 mb-3"><label class="form-label">Valid ID photo</label><input class="form-control" type="file" name="id_photo" accept="image/*" required /></div>
 
     <button class="btn-govly" type="submit">Send OTP to Email</button>
     <a class="btn btn-outline-secondary w-100 mt-2" href="<?= h(base_url('login')) ?>">Already registered? Login</a>

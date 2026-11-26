@@ -5,6 +5,15 @@ declare(strict_types=1);
  * Minimal SMTP mailer for Hostinger (ssl://smtp.hostinger.com:465).
  * Email only — no SMS.
  */
+function mail_office_name(): string
+{
+    $c = $GLOBALS['CONFIG'] ?? [];
+    $brgy = trim((string) ($c['barangay'] ?? 'Barangay Sta. Cruz'));
+    $muni = trim((string) ($c['municipality'] ?? 'Bacnotan'));
+    $prov = trim((string) ($c['province'] ?? 'La Union'));
+    return $brgy . ', ' . $muni . ', ' . $prov;
+}
+
 function send_mail(string $to, string $subject, string $htmlBody, string $textBody = ''): bool
 {
     $m = $GLOBALS['CONFIG']['mail'] ?? [];
@@ -19,7 +28,7 @@ function send_mail(string $to, string $subject, string $htmlBody, string $textBo
     $user = (string) ($m['username'] ?? '');
     $pass = (string) ($m['password'] ?? '');
     $from = (string) ($m['from'] ?? $user);
-    $fromName = (string) ($m['from_name'] ?? 'GovLy');
+    $fromName = (string) ($m['from_name'] ?? mail_office_name());
 
     if ($user === '' || $pass === '' || str_contains($pass, 'YOUR_EMAIL')) {
         error_log('[mail] SMTP credentials not configured');
@@ -59,14 +68,14 @@ function send_mail(string $to, string $subject, string $htmlBody, string $textBo
 
     try {
         $expect($fp, [220]);
-        $cmd($fp, 'EHLO govly.stacruz');
+        $cmd($fp, 'EHLO stacruzbacnotan.com');
         $expect($fp, [250]);
 
         if ($secure === 'tls') {
             $cmd($fp, 'STARTTLS');
             $expect($fp, [220]);
             stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
-            $cmd($fp, 'EHLO govly.stacruz');
+            $cmd($fp, 'EHLO stacruzbacnotan.com');
             $expect($fp, [250]);
         }
 
@@ -85,9 +94,11 @@ function send_mail(string $to, string $subject, string $htmlBody, string $textBo
         $expect($fp, [354]);
 
         $boundary = 'b_' . bin2hex(random_bytes(8));
+        $safeFrom = str_replace(['"', "\r", "\n"], '', $fromName);
         $headers = [
             'Date: ' . date('r'),
-            'From: ' . sprintf('"%s" <%s>', addslashes($fromName), $from),
+            'From: ' . sprintf('"%s" <%s>', $safeFrom, $from),
+            'Reply-To: <' . $from . '>',
             'To: <' . $to . '>',
             'Subject: =?UTF-8?B?' . base64_encode($subject) . '?=',
             'MIME-Version: 1.0',
@@ -117,26 +128,53 @@ function send_mail(string $to, string $subject, string $htmlBody, string $textBo
 
 function mail_wrap(string $title, string $innerHtml): string
 {
-    return '<!DOCTYPE html><html><body style="font-family:Segoe UI,Arial,sans-serif;background:#f3f7fc;padding:24px;">'
-        . '<div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #d6e3f3;border-radius:12px;overflow:hidden;">'
-        . '<div style="background:linear-gradient(135deg,#0038A8,#002570);color:#fff;padding:18px 22px;font-weight:700;">'
-        . h($title) . '</div>'
-        . '<div style="padding:22px;color:#1f2937;line-height:1.55;">' . $innerHtml . '</div>'
-        . '<div style="padding:14px 22px;background:#f8fafc;color:#64748b;font-size:12px;">Barangay Sta. Cruz, Bacnotan, La Union · GovLy 2.0 · Email only (no SMS)</div>'
+    $office = mail_office_name();
+    $brgyLogo = base_url('assets/sta-cruz.jpg');
+    $bagongLogo = base_url('assets/bagong-pilipinas-logo.png.png');
+    return '<!DOCTYPE html><html><body style="font-family:Georgia,\'Times New Roman\',serif;background:#f4f6f9;padding:24px;margin:0;">'
+        . '<div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #d7dee8;border-radius:8px;overflow:hidden;">'
+        . '<div style="background:#fff;padding:16px 24px 12px;border-bottom:1px solid #e8eef5;text-align:center;">'
+        . '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;border-collapse:collapse;">'
+        . '<tr>'
+        . '<td style="padding:0 10px;vertical-align:middle;">'
+        . '<img src="' . h($brgyLogo) . '" alt="Barangay Sta. Cruz" width="64" height="64" style="display:block;width:64px;height:64px;border-radius:50%;border:2px solid #e2e8f0;object-fit:cover;" />'
+        . '</td>'
+        . '<td style="padding:0 10px;vertical-align:middle;">'
+        . '<img src="' . h($bagongLogo) . '" alt="Bagong Pilipinas" width="72" height="64" style="display:block;width:72px;height:64px;object-fit:contain;" />'
+        . '</td>'
+        . '</tr>'
+        . '</table>'
+        . '</div>'
+        . '<div style="background:#0038A8;color:#fff;padding:18px 24px;">'
+        . '<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.9;">Republic of the Philippines</div>'
+        . '<div style="font-size:18px;font-weight:700;margin-top:4px;">' . h($office) . '</div>'
+        . '<div style="font-size:13px;margin-top:6px;opacity:.95;">' . h($title) . '</div>'
+        . '</div>'
+        . '<div style="padding:24px;color:#1f2937;line-height:1.6;font-family:Segoe UI,Arial,sans-serif;font-size:15px;">'
+        . $innerHtml
+        . '</div>'
+        . '<div style="padding:14px 24px;background:#f8fafc;color:#64748b;font-size:12px;font-family:Segoe UI,Arial,sans-serif;border-top:1px solid #e8eef5;">'
+        . 'This message was sent by the Office of the Punong Barangay, ' . h($office) . '. '
+        . 'Please do not reply with personal passwords. For assistance, visit the Barangay Hall during office hours.'
+        . '</div>'
         . '</div></body></html>';
 }
 
 function send_otp_email(string $email, string $otp): bool
 {
     $mins = (int) (($GLOBALS['CONFIG']['otp']['ttl_min'] ?? 10));
+    $office = mail_office_name();
     $html = mail_wrap(
-        'Email verification code',
-        '<p>Your one-time password (OTP) for <strong>GovLy 2.0</strong> registration is:</p>'
-        . '<p style="font-size:28px;font-weight:800;letter-spacing:6px;color:#0038A8;">' . h($otp) . '</p>'
-        . '<p>This code expires in <strong>' . $mins . ' minutes</strong>. Do not share it.</p>'
-        . '<p>If you did not request this, ignore this email.</p>'
+        'Email verification',
+        '<p>Good day,</p>'
+        . '<p>Thank you for registering with the online services of <strong>' . h($office) . '</strong>.</p>'
+        . '<p>Your one-time verification code is:</p>'
+        . '<p style="font-size:28px;font-weight:800;letter-spacing:6px;color:#0038A8;text-align:center;margin:20px 0;">' . h($otp) . '</p>'
+        . '<p>This code expires in <strong>' . $mins . ' minutes</strong>. For your security, do not share it with anyone.</p>'
+        . '<p>If you did not request this code, you may disregard this email.</p>'
+        . '<p style="margin-top:22px;">Respectfully,<br><strong>Barangay Sta. Cruz</strong><br>Bacnotan, La Union</p>'
     );
-    return send_mail($email, 'GovLy 2.0 OTP: ' . $otp, $html);
+    return send_mail($email, 'Barangay Sta. Cruz — verification code', $html);
 }
 
 function send_registration_status_email(array $user, string $status): bool
@@ -145,14 +183,24 @@ function send_registration_status_email(array $user, string $status): bool
         return false;
     }
     $name = $user['first_name'] ?? 'Resident';
+    $office = mail_office_name();
     if ($status === 'active' || $status === 'Approved') {
-        $msg = '<p>Your GovLy 2.0 registration was <strong>approved</strong>. You can now log in and request certificates.</p>';
-        $subject = 'GovLy 2.0 registration approved';
+        $msg = '<p>We are pleased to inform you that your online registration with <strong>' . h($office) . '</strong> has been <strong>approved</strong>.</p>'
+            . '<p>You may now sign in to request barangay certificates and related services.</p>';
+        $subject = 'Barangay Sta. Cruz — registration approved';
+        $title = 'Registration approved';
     } else {
-        $msg = '<p>Your GovLy 2.0 registration was <strong>rejected</strong>. Please visit the Barangay Hall for assistance.</p>';
-        $subject = 'GovLy 2.0 registration update';
+        $msg = '<p>We regret to inform you that your online registration with <strong>' . h($office) . '</strong> was <strong>not approved</strong>.</p>'
+            . '<p>Please visit the Barangay Hall for further assistance.</p>';
+        $subject = 'Barangay Sta. Cruz — registration update';
+        $title = 'Registration update';
     }
-    $html = mail_wrap('Registration update', '<p>Hello ' . h($name) . ',</p>' . $msg);
+    $html = mail_wrap(
+        $title,
+        '<p>Dear ' . h($name) . ',</p>'
+        . $msg
+        . '<p style="margin-top:22px;">Respectfully,<br><strong>Office of the Punong Barangay</strong><br>Barangay Sta. Cruz, Bacnotan, La Union</p>'
+    );
     return send_mail((string) $user['email'], $subject, $html);
 }
 
@@ -168,23 +216,26 @@ function send_certificate_status_email(array $user, array $request): bool
     if ($name === '') {
         $name = $request['resident_name'] ?? 'Resident';
     }
+    $office = mail_office_name();
 
     $statusLine = match ($status) {
-        'Approved' => 'Your request was <strong>approved</strong>. Please wait for printing and pickup instructions.',
+        'Approved' => 'Your request has been <strong>approved</strong>. Please wait for further instructions regarding printing and release.',
         'In Progress' => 'Your request is now <strong>in progress</strong> at the barangay office.',
-        'Completed' => 'Your request is <strong>done / ready for pickup</strong>. Please proceed to the Barangay Hall of Sta. Cruz and pay in cash if a fee applies.',
-        'Rejected' => 'Your request was <strong>rejected</strong>.' . ($note !== '' ? ' Reason: ' . h($note) : ''),
+        'Completed' => 'Your certificate has been <strong>printed and is ready for pickup</strong> at the Barangay Hall of Sta. Cruz. Payment, if any, is in cash at the office. Please bring a valid ID when claiming your document.',
+        'Rejected' => 'Your request was <strong>not approved</strong>.' . ($note !== '' ? ' Note: ' . h($note) : ''),
         default => 'Your request status is now <strong>' . h($status) . '</strong>.',
     };
 
     $html = mail_wrap(
         'Certificate request update',
-        '<p>Hello ' . h($name) . ',</p>'
-        . '<p>Update for your <strong>' . h($type) . '</strong> request'
-        . (!empty($request['id']) ? ' (#' . (int) $request['id'] . ')' : '') . ':</p>'
+        '<p>Dear ' . h($name) . ',</p>'
+        . '<p>This is an update regarding your <strong>' . h($type) . '</strong> request'
+        . (!empty($request['id']) ? ' (Reference No. ' . (int) $request['id'] . ')' : '')
+        . ' with <strong>' . h($office) . '</strong>:</p>'
         . '<p>' . $statusLine . '</p>'
-        . '<p>You can also check status anytime by logging into GovLy 2.0. This system uses <strong>email only</strong> (no SMS).</p>'
+        . '<p>You may also check your request status by signing in to the barangay online portal.</p>'
+        . '<p style="margin-top:22px;">Respectfully,<br><strong>Office of the Punong Barangay</strong><br>Barangay Sta. Cruz, Bacnotan, La Union</p>'
     );
 
-    return send_mail((string) $user['email'], 'GovLy 2.0: ' . $type . ' is ' . $status, $html);
+    return send_mail((string) $user['email'], 'Barangay Sta. Cruz — ' . $type . ' (' . $status . ')', $html);
 }

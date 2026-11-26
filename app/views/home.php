@@ -238,20 +238,6 @@ require __DIR__ . '/_nav.php';
     </div>
   </section>
 
-  <section id="spot-map" class="page-section" style="background:#fff">
-    <div class="container-xl px-3">
-      <div class="section-intro text-center">
-        <span class="pill pill-blue">Location</span>
-        <h2 class="bac-heading">Barangay Spot Map</h2>
-        <p class="bac-lead">Spot map of Barangay Sta. Cruz — roads follow OpenStreetMap, with local landmarks inside the barangay.</p>
-      </div>
-      <div class="bac-map-frame">
-        <iframe class="bac-map" title="Sta. Cruz map" loading="lazy"
-          src="https://www.openstreetmap.org/export/embed.html?bbox=120.330%2C16.730%2C120.360%2C16.750&amp;layer=mapnik&amp;marker=16.74078%2C120.34589"></iframe>
-      </div>
-    </div>
-  </section>
-
   <section id="contact" class="page-section" style="background:#f8f9fa">
     <div class="container-xl px-3">
       <div class="section-intro text-center">

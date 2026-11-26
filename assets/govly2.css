@@ -6,12 +6,19 @@
   --govly-amber: #ffc107;
 }
 
-html { overflow-x: clip; }
+html { overflow-x: hidden; }
 body {
   background: #f8f9fa;
   color: #333;
-  overflow-x: clip;
+  overflow-x: hidden;
   min-width: 0;
+}
+/* Never clip vertical scroll on admin */
+html:has(body.admin-page),
+body.admin-page {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: auto !important;
 }
 /* Fixed nav (80px) + spacer so ALL pages clear the header */
 .site-nav {
@@ -171,7 +178,8 @@ button.hero-stat {
   padding-bottom: 2rem;
   box-sizing: border-box;
 }
-.admin-shell {
+/* Legacy admin flex shell (unused when Capstone #sidebar layout is active) */
+.admin-shell:not(:has(#sidebar)) {
   display: flex;
   min-height: calc(100dvh - 80px);
   width: 100%;
@@ -245,21 +253,204 @@ table.data th { background: #eef4fb; color: #003d82; }
 .verify-badge.is-valid { background: #dcfce7; color: #166534; }
 .verify-badge.is-invalid { background: #fee2e2; color: #991b1b; }
 
-.cert-sheet {
-  max-width: 8.5in; margin: 1rem auto; background: #fff; padding: .7in .75in;
-  font-family: 'Times New Roman', Times, serif; color: #111;
+/* Capstone Finale certificate layout (do not use old space-between / -60px header) */
+.cert-sheet,
+.cert-sheet * {
+  font-family: 'Times New Roman', Times, Georgia, serif;
 }
-.cert-logos { display: flex; justify-content: space-between; }
-.cert-logos img { height: 78px; }
-.cert-header { text-align: center; margin-top: -60px; }
-.cert-brgy { font-weight: 800; font-size: 1.15rem; }
-.cert-doc-title { text-align: center; text-transform: uppercase; margin: 1.2rem 0 .4rem; }
-.cert-control { text-align: right; }
-.cert-sign-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 1.5rem; }
-.cert-bottom { display: flex; justify-content: space-between; margin-top: 1.5rem; align-items: flex-end; }
-.cert-official-receipt { border: 1px solid #333; padding: .6rem .8rem; min-width: 240px; font-size: .85rem; }
-.cert-qr { text-align: center; font-size: .75rem; }
-.cert-qr img { width: 110px; height: 110px; }
+.cert-sheet {
+  width: 8.5in;
+  height: 11in;
+  min-height: 11in;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.5in 0.65in 0.45in;
+  background: #fff;
+  color: #111;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+.cert-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #003d82;
+}
+.cert-logos img {
+  height: 86px;
+  width: auto;
+  object-fit: contain;
+}
+.cert-header {
+  text-align: center;
+  margin: 14px 0 8px;
+}
+.cert-header p {
+  margin: 2px 0;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.cert-rep {
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 12px !important;
+}
+.cert-brgy {
+  font-weight: 700;
+  font-size: 13px !important;
+}
+.cert-office {
+  margin-top: 8px !important;
+  font-weight: 700;
+  color: #c41e3a;
+  letter-spacing: 2px;
+  font-size: 12px !important;
+}
+.cert-doc-title {
+  margin: 18px 0 4px;
+  text-align: center;
+  color: #003d82;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.cert-control {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #334155;
+}
+.cert-salutation {
+  margin: 0 0 14px;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 13px;
+}
+.cert-body,
+.cert-purpose,
+.cert-issued {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: justify;
+  white-space: pre-wrap;
+}
+.cert-purpose { font-weight: 700; }
+.cert-purpose span { text-transform: uppercase; }
+.cert-issued-date,
+.cert-issued span { font-weight: 700; }
+.cert-editable {
+  outline: 2px dashed #0066cc;
+  padding: 4px;
+  cursor: text;
+  border-radius: 4px;
+  background-color: #f0f7ff;
+}
+.cert-sign-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: 36px;
+}
+.cert-sign-label {
+  margin: 0 0 28px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cert-sign-name {
+  margin: 0;
+  min-width: 2.4in;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #111;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.cert-sign-role {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #444;
+}
+.cert-dry-seal {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed #ccc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #999;
+  flex-shrink: 0;
+}
+.cert-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 22px;
+  padding-top: 10px;
+  border-top: 1px solid #d0d5dd;
+}
+.cert-official-receipt {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #111;
+  border: none;
+  padding: 0;
+  min-width: 0;
+}
+.cert-or-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.cert-official-receipt p { margin: 0 0 2px; }
+.cert-official-receipt span {
+  display: inline-block;
+  min-width: 1.35in;
+  color: #475569;
+}
+.cert-qr { text-align: center; flex-shrink: 0; font-size: .75rem; }
+.cert-qr img,
+.cert-qr-slot {
+  width: 112px;
+  height: 112px;
+  display: block;
+  margin: 0 auto 4px;
+}
+.cert-qr-slot { border: 1px solid #e2e8f0; }
+.cert-qr span {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+.cert-print-area .cert-sheet {
+  transform-origin: top center;
+}
+@media print {
+  .cert-sheet {
+    box-shadow: none !important;
+    width: 8.5in !important;
+    height: 11in !important;
+  }
+  .cert-editable {
+    outline: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+}
 
 html[data-theme="dark"] body { background: #0b1220; color: #e5e7eb; }
 html[data-theme="dark"] .service-tile,
