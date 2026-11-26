@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Bacnotan District Hospital">
+  <circle cx="60" cy="60" r="58" fill="#7c3aed"/>
+  <circle cx="60" cy="60" r="48" fill="#fff"/>
+  <rect x="34" y="30" width="52" height="60" rx="6" fill="#ede9fe"/>
+  <rect x="34" y="30" width="52" height="14" rx="6" fill="#7c3aed"/>
+  <rect x="54" y="48" width="12" height="34" rx="2" fill="#7c3aed"/>
+  <rect x="43" y="59" width="34" height="12" rx="2" fill="#7c3aed"/>
+  <rect x="48" y="82" width="8" height="8" rx="1" fill="#7c3aed"/>
+  <rect x="64" y="82" width="8" height="8" rx="1" fill="#7c3aed"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Municipal Health Office">
+  <circle cx="60" cy="60" r="58" fill="#0369a1"/>
+  <circle cx="60" cy="60" r="48" fill="#fff"/>
+  <circle cx="60" cy="60" r="42" fill="#e0f2fe"/>
+  <rect x="52" y="28" width="16" height="64" rx="4" fill="#0369a1"/>
+  <rect x="28" y="52" width="64" height="16" rx="4" fill="#0369a1"/>
+  <circle cx="60" cy="60" r="10" fill="#fff"/>
+</svg>
