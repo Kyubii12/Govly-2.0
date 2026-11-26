@@ -373,6 +373,9 @@ function act_update_request(): void
     ]);
 
     $row = db_one('SELECT * FROM requests WHERE id = ?', [$id]);
+    if ($row && $status === 'Completed') {
+        $row = record_certificate_issue($row);
+    }
     // Email only when certificate is Completed (ready) or Rejected — no SMS
     if ($row && in_array($status, ['Completed', 'Rejected'], true)) {
         $user = [

@@ -429,13 +429,22 @@ function admin_icon(string $name, int $size = 17): string
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' . $s . '" height="' . $s . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>';
 }
 
-function issued_today(): string
+function issued_label(?string $when = null): string
 {
-    $d = (int) date('j');
+    $ts = $when ? strtotime($when) : time();
+    if (!$ts) {
+        $ts = time();
+    }
+    $d = (int) date('j', $ts);
     $suf = ($d > 3 && $d < 21) ? 'th' : match ($d % 10) {
         1 => 'st', 2 => 'nd', 3 => 'rd', default => 'th',
     };
-    return $d . $suf . ' day of ' . strtoupper(date('F')) . ', ' . date('Y');
+    return $d . $suf . ' day of ' . strtoupper(date('F', $ts)) . ', ' . date('Y', $ts);
+}
+
+function issued_today(): string
+{
+    return issued_label();
 }
 
 function make_control_no(): string
@@ -446,6 +455,62 @@ function make_control_no(): string
         $tail .= $alphabet[random_int(0, strlen($alphabet) - 1)];
     }
     return 'SC-' . date('Ymd') . '-' . $tail;
+}
+
+/** A completed request is an issued certificate. Fill control and receipt numbers when they are missing. */
+function record_certificate_issue(array $row): array
+{
+    if (($row['status'] ?? '') !== 'Completed') {
+        return $row;
+    }
+    $last = [];
+    if (!empty($row['last_cert'])) {
+        $decoded = json_decode((string) $row['last_cert'], true);
+        if (is_array($decoded)) {
+            $last = $decoded;
+        }
+    }
+    if (trim((string) ($last['controlNo'] ?? '')) !== '') {
+        return $row;
+    }
+
+    static $captain = null;
+    if ($captain === null) {
+        $captainRow = db_one("SELECT name FROM officials WHERE position = 'Punong Barangay' LIMIT 1");
+        $captain = strtoupper(trim((string) ($captainRow['name'] ?? 'PUNONG BARANGAY')));
+    }
+
+    $type = (string) ($row['certificate_type'] ?? '');
+    $name = (string) ($row['resident_name'] ?? '');
+    $address = 'Barangay Sta. Cruz, Bacnotan, La Union';
+    $tpl = get_cert_template($type);
+    $control = make_control_no();
+    $when = (string) ($row['updated_at'] ?? '');
+    $payload = [
+        'type' => $type,
+        'recipientName' => $name,
+        'body' => fill_placeholders((string) ($tpl['body'] ?? ''), $name, $address),
+        'purpose' => (string) (($row['purpose'] ?? '') !== '' ? $row['purpose'] : ($tpl['purpose'] ?? '')),
+        'details' => (string) ($tpl['details'] ?? ''),
+        'closing' => (string) ($tpl['closing'] ?? ''),
+        'issuedDate' => issued_label($when !== '' ? $when : null),
+        'certifiedBy' => $captain,
+        'controlNo' => $control,
+        'receiptNo' => 'OR-' . $control,
+        'amount' => service_price(site(), $type),
+    ];
+    db_exec('UPDATE requests SET last_cert = ? WHERE id = ?', [json_encode($payload), (int) $row['id']]);
+    try {
+        db_exec(
+            'INSERT INTO printed_certs (id, type, recipient_name, purpose, issued_date, certified_by, receipt_no, amount) VALUES (?,?,?,?,?,?,?,?)
+             ON DUPLICATE KEY UPDATE type=VALUES(type), recipient_name=VALUES(recipient_name), purpose=VALUES(purpose), issued_date=VALUES(issued_date), certified_by=VALUES(certified_by), receipt_no=VALUES(receipt_no), amount=VALUES(amount)',
+            [$control, $payload['type'], $payload['recipientName'], $payload['purpose'], $payload['issuedDate'], $payload['certifiedBy'], $payload['receiptNo'], $payload['amount']]
+        );
+    } catch (Throwable $e) {
+        // The request record is already saved. Verification insert is optional if the table is unavailable.
+    }
+    $row['last_cert'] = json_encode($payload);
+    return $row;
 }
 
 function fill_placeholders(string $text, string $name, string $address): string

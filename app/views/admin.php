@@ -863,6 +863,11 @@ $pageSubs = [
   $sort = $_GET['sort'] ?? 'date';
   $q = trim((string) ($_GET['q'] ?? ''));
   $allRows = db_all('SELECT * FROM requests ORDER BY FIELD(status,"Pending","Approved","In Progress","Completed","Rejected"), created_at DESC');
+  foreach ($allRows as $i => $rr) {
+      if (($rr['status'] ?? '') === 'Completed') {
+          $allRows[$i] = record_certificate_issue($rr);
+      }
+  }
   $countAll = count($allRows);
   $countBy = ['Pending' => 0, 'In Progress' => 0, 'Completed' => 0, 'Rejected' => 0, 'Approved' => 0];
   foreach ($allRows as $rr) {
@@ -900,10 +905,26 @@ $pageSubs = [
   }
   $reqIds = array_map(fn($r) => (int) $r['id'], $rows);
   $logsByReq = [];
+  $usersById = [];
+  $residentsById = [];
   if ($reqIds) {
       $in = implode(',', array_fill(0, count($reqIds), '?'));
       foreach (db_all("SELECT * FROM request_logs WHERE request_id IN ($in) ORDER BY id DESC", $reqIds) as $log) {
           $logsByReq[(int) $log['request_id']][] = $log;
+      }
+  }
+  $userIds = array_values(array_unique(array_filter(array_map(static fn($r) => (int) ($r['user_id'] ?? 0), $rows))));
+  if ($userIds) {
+      $in = implode(',', array_fill(0, count($userIds), '?'));
+      foreach (db_all("SELECT id, first_name, middle_name, last_name, phone, email, street_address, purok, occupation, status, created_at FROM users WHERE id IN ($in)", $userIds) as $u) {
+          $usersById[(int) $u['id']] = $u;
+      }
+  }
+  $residentIds = array_values(array_unique(array_filter(array_map(static fn($r) => (int) ($r['resident_id'] ?? 0), $rows))));
+  if ($residentIds) {
+      $in = implode(',', array_fill(0, count($residentIds), '?'));
+      foreach (db_all("SELECT * FROM residents WHERE id IN ($in)", $residentIds) as $res) {
+          $residentsById[(int) $res['id']] = $res;
       }
   }
   $captainRow = db_one("SELECT name FROM officials WHERE position = 'Punong Barangay' LIMIT 1");
@@ -1048,6 +1069,8 @@ $pageSubs = [
                       <?php if ($emailed): ?>
                         <div style="font-size:.68rem;color:#166534">Email sent</div>
                       <?php endif; ?>
+                    <?php elseif ($st === 'Completed'): ?>
+                      <div class="fw-semibold" style="font-size:.8rem;color:#166534">Issued</div>
                     <?php else: ?>
                       <span class="text-muted" style="font-size:.75rem">Not printed yet</span>
                     <?php endif; ?>
@@ -1062,51 +1085,11 @@ $pageSubs = [
                     <span class="badge rounded-pill px-2 py-1" style="<?= h(status_badge_style($st)) ?>;font-size:.75rem"><?= h($st) ?></span>
                   </td>
                   <td>
-                    <div class="d-flex gap-1 flex-wrap align-items-center" style="min-width:250px">
-                      <button type="button" class="btn btn-sm rounded-pill fw-semibold d-flex align-items-center gap-1"
-                        style="background:#eef2ff;color:#3730a3;font-size:.7rem;border:none"
-                        data-bs-toggle="modal" data-bs-target="#logsModal<?= $rid ?>">
-                        <?= admin_icon('history', 12) ?> View logs
-                      </button>
-
-                      <?php if (in_array($st, ['In Progress', 'Completed', 'Approved'], true)): ?>
-                        <a href="<?= h(base_url('print-cert?id=' . $rid)) ?>"
-                          class="btn btn-sm rounded-pill fw-semibold d-flex align-items-center gap-1"
-                          style="background:<?= $st === 'Completed' ? '#166534' : '#3b82f6' ?>;color:#fff;font-size:.7rem;border:none">
-                          <?= admin_icon('printer', 12) ?> <?= $st === 'Completed' ? 'Print again' : 'View & Print' ?>
-                        </a>
-                        <button type="button" class="btn btn-sm rounded-pill fw-semibold d-flex align-items-center gap-1"
-                          style="background:#0f766e;color:#fff;font-size:.7rem;border:none"
-                          data-bs-toggle="modal" data-bs-target="#receiptModal<?= $rid ?>">
-                          <?= admin_icon('receipt', 12) ?> Receipt
-                        </button>
-                      <?php endif; ?>
-
-                      <?php if ($st === 'Pending'): ?>
-                        <?php foreach (['In Progress' => '#dbeafe|#1e40af', 'Completed' => '#dcfce7|#166534', 'Rejected' => '#fee2e2|#991b1b'] as $next => $colors):
-                          [$bg, $fg] = explode('|', $colors);
-                        ?>
-                          <form method="post" class="d-inline">
-                            <input type="hidden" name="action" value="update_request" />
-                            <input type="hidden" name="id" value="<?= $rid ?>" />
-                            <input type="hidden" name="status" value="<?= h($next) ?>" />
-                            <input type="hidden" name="return_filter" value="<?= h($filter) ?>" />
-                            <button type="submit" class="btn btn-sm rounded-pill fw-semibold"
-                              style="background:<?= h($bg) ?>;color:<?= h($fg) ?>;font-size:.7rem;border:none"
-                              onclick="return confirm('Set request #<?= $rid ?> to <?= h($next) ?>?')">
-                              <?= h($next) ?>
-                            </button>
-                          </form>
-                        <?php endforeach; ?>
-                      <?php endif; ?>
-
-                      <?php if ($st === 'Rejected'): ?>
-                        <span class="badge rounded-pill px-2 py-1 d-inline-flex align-items-center gap-1"
-                          style="background:#f3f4f6;color:#6b7280;font-size:.75rem">
-                          <?= admin_icon('xcircle', 12) ?> Rejected
-                        </span>
-                      <?php endif; ?>
-                    </div>
+                    <button type="button" class="btn btn-sm rounded-pill fw-semibold d-inline-flex align-items-center gap-1"
+                      style="background:#0038A8;color:#fff;font-size:.75rem;border:none"
+                      data-bs-toggle="modal" data-bs-target="#logsModal<?= $rid ?>">
+                      <?= admin_icon('history', 12) ?> View request
+                    </button>
                   </td>
                 </tr>
               <?php endforeach; endif; ?>
@@ -1205,29 +1188,87 @@ $pageSubs = [
         $email = trim((string) ($r['email'] ?? ''));
         $phone = trim((string) ($r['phone'] ?? ''));
         $contact = $email !== '' ? $email : ($phone !== '' ? $phone : '—');
+        $dateLabel = $r['created_at'] ? date('M j, Y', strtotime($r['created_at'])) : '—';
+        $timeLabel = $r['created_at'] ? date('g:i A', strtotime($r['created_at'])) : '';
+        $note = trim((string) ($r['admin_note'] ?? ''));
         $logs = $logsByReq[$rid] ?? [];
+        $person = $usersById[(int) ($r['user_id'] ?? 0)] ?? null;
+        $resident = $residentsById[(int) ($r['resident_id'] ?? 0)] ?? null;
+        $fullName = trim(implode(' ', array_filter([
+            $person['first_name'] ?? '',
+            $person['middle_name'] ?? '',
+            $person['last_name'] ?? '',
+        ])));
+        if ($fullName === '') {
+            $fullName = (string) ($resident['full_name'] ?? $r['resident_name'] ?? '—');
+        }
+        $personPhone = trim((string) ($person['phone'] ?? $resident['phone'] ?? $phone));
+        $personEmail = trim((string) ($person['email'] ?? $email));
+        $personAddress = trim((string) ($person['street_address'] ?? $resident['address'] ?? ''));
+        $personPurok = trim((string) ($person['purok'] ?? $resident['purok'] ?? ''));
+        $personJob = trim((string) ($person['occupation'] ?? $resident['occupation'] ?? ''));
+        $personBirth = trim((string) ($resident['birth_date'] ?? ''));
+        $personStatus = trim((string) ($person['status'] ?? $resident['status'] ?? ''));
       ?>
         <div class="modal fade" id="logsModal<?= $rid ?>" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content rounded-4 border-0">
               <div class="modal-header" style="background:linear-gradient(135deg,#0038A8,#002570);color:#fff">
-                <h5 class="modal-title fw-bold">Request logs · #<?= $rid ?></h5>
+                <h5 class="modal-title fw-bold">Request #<?= $rid ?></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
+                <h6 class="fw-bold mb-2" style="color:#0038A8">Resident</h6>
                 <div class="rounded-3 p-3 mb-3" style="background:#f8fafc;border:1px solid #e2e8f0;font-size:.85rem">
-                  <div class="fw-semibold mb-1"><?= h($r['resident_name']) ?></div>
-                  <div class="text-muted"><?= h($r['certificate_type']) ?> · <?= h($st) ?></div>
-                  <?php if ($email !== '' || $phone !== ''): ?>
-                    <div class="text-muted mt-1"><?= h(trim($email . ($email && $phone ? ' · ' : '') . $phone)) ?></div>
-                  <?php endif; ?>
-                  <?php if ($control !== ''): ?>
-                    <div class="mt-1">Control No. <strong><?= h($control) ?></strong><?= $receiptNo !== '' ? ' · OR ' . h($receiptNo) : '' ?></div>
-                  <?php endif; ?>
-                  <?php if (!empty($r['purpose'])): ?>
-                    <div class="mt-1">Purpose: <?= h($r['purpose']) ?></div>
-                  <?php endif; ?>
+                  <div class="row g-2">
+                    <?php foreach ([
+                      'Name' => $fullName,
+                      'Email' => $personEmail !== '' ? $personEmail : '—',
+                      'Mobile' => $personPhone !== '' ? $personPhone : '—',
+                      'Address' => $personAddress !== '' ? $personAddress : '—',
+                      'Purok' => $personPurok !== '' ? $personPurok : '—',
+                      'Occupation' => $personJob !== '' ? $personJob : '—',
+                      'Birth date' => $personBirth !== '' ? $personBirth : '—',
+                      'Account' => $personStatus !== '' ? ucfirst($personStatus) : '—',
+                    ] as $label => $value): ?>
+                      <div class="col-md-6">
+                        <div class="text-muted" style="font-size:.72rem"><?= h($label) ?></div>
+                        <div class="fw-semibold"><?= h($value) ?></div>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
                 </div>
+
+                <h6 class="fw-bold mb-2" style="color:#0038A8">Request</h6>
+                <div class="rounded-3 p-3 mb-3" style="background:#fff;border:1px solid #e2e8f0;font-size:.85rem">
+                  <div class="row g-2">
+                    <?php foreach ([
+                      'Reference' => '#' . $rid . (!empty($r['walk_in']) ? ' · Walk-in' : ' · Online'),
+                      'Certificate' => (string) ($r['certificate_type'] ?? '—'),
+                      'Purpose' => (string) (($r['purpose'] ?? '') !== '' ? $r['purpose'] : '—'),
+                      'Status' => $st,
+                      'Fee' => $amount !== '' ? $amount : '—',
+                      'Payment' => (string) ($r['payment_mode'] ?: 'Pay at Barangay Hall'),
+                      'Filed' => trim($dateLabel . ' ' . $timeLabel),
+                      'Control No.' => $control !== '' ? $control : 'Not printed yet',
+                      'Receipt' => $control !== '' ? $receiptNo : '—',
+                      'Note' => $note !== '' ? $note : '—',
+                    ] as $label => $value): ?>
+                      <div class="col-md-6">
+                        <div class="text-muted" style="font-size:.72rem"><?= h($label) ?></div>
+                        <div class="fw-semibold"><?= h($value) ?></div>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2 mt-3">
+                    <a href="<?= h(base_url('print-cert?id=' . $rid)) ?>" class="btn btn-sm rounded-pill fw-semibold" style="background:#0038A8;color:#fff"><?= admin_icon('printer', 12) ?> <?= $st === 'Completed' ? 'Print again' : 'View & print' ?></a>
+                    <?php if ($control !== ''): ?>
+                      <button type="button" class="btn btn-sm rounded-pill fw-semibold" style="background:#0f766e;color:#fff" data-bs-toggle="modal" data-bs-target="#receiptModal<?= $rid ?>"><?= admin_icon('receipt', 12) ?> Receipt</button>
+                    <?php endif; ?>
+                  </div>
+                </div>
+
+                <h6 class="fw-bold mb-2" style="color:#0038A8">History</h6>
                 <?php if (!$logs): ?>
                   <p class="text-muted mb-0">No status history yet.</p>
                 <?php else: ?>
