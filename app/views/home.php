@@ -3,6 +3,10 @@ $title = 'Barangay Sta.Cruz Portal';
 $site = site();
 $officials = [];
 $anns = [];
+try {
+    sync_services_with_templates();
+    $site = site();
+} catch (Throwable $e) {}
 $services = $site['services'] ?? [];
 try {
     ensure_announcements_schema();

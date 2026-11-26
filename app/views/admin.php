@@ -156,13 +156,10 @@ $pageSubs = [
             <a class="btn-admin-secondary" href="<?= h(base_url('admin?tab=registered')) ?>"><?= admin_icon('download', 14) ?> Export</a>
           <?php elseif ($tab === 'requests'): ?>
             <a class="btn-admin-primary" href="<?= h(base_url('admin?tab=requests&filter=Pending')) ?>">Pending Queue</a>
-            <a class="btn-admin-secondary" href="<?= h(base_url('admin?tab=activity')) ?>"><?= admin_icon('download', 14) ?> Export</a>
           <?php elseif ($tab === 'registrations'): ?>
             <a class="btn-admin-primary" href="<?= h(base_url('admin?tab=registrations')) ?>">Review All</a>
-            <a class="btn-admin-secondary" href="<?= h(base_url('admin?tab=registered')) ?>"><?= admin_icon('download', 14) ?> Export</a>
           <?php elseif ($tab === 'announcements'): ?>
             <a class="btn-admin-primary" href="#announcementForm"><?= admin_icon('plus', 14) ?> New Announcement</a>
-            <a class="btn-admin-secondary" href="<?= h(base_url('admin?tab=activity')) ?>"><?= admin_icon('download', 14) ?> Export</a>
           <?php elseif ($tab === 'officials'): ?>
             <a class="btn-admin-primary" href="#officialForm"><?= admin_icon('plus', 14) ?> Add Official</a>
           <?php elseif ($tab === 'admins'): ?>
@@ -176,7 +173,6 @@ $pageSubs = [
             <a class="btn-admin-secondary" href="<?= h(base_url('admin?tab=residents')) ?>">Open Census</a>
           <?php elseif ($tab === 'registered'): ?>
             <a class="btn-admin-primary" href="<?= h(base_url('admin?tab=registrations')) ?>">Review Registrations</a>
-            <a class="btn-admin-secondary" href="<?= h(base_url('admin?tab=residents')) ?>"><?= admin_icon('download', 14) ?> Export</a>
           <?php else: ?>
             <a class="btn-admin-secondary" href="<?= h(base_url()) ?>"><?= admin_icon('globe', 14) ?> Website</a>
           <?php endif; ?>
@@ -1434,6 +1430,8 @@ $pageSubs = [
       </div>
 
 <?php elseif ($tab === 'certificates'):
+  sync_services_with_templates();
+  $site = site();
   $types = cert_types();
   $cur = trim((string) ($_GET['type'] ?? ''));
   $showPreview = $cur !== '' && in_array($cur, $types, true);
@@ -1791,7 +1789,10 @@ $pageSubs = [
         <?php endforeach; ?>
       </div>
 
-<?php elseif ($tab === 'website'): ?>
+<?php elseif ($tab === 'website'):
+  sync_services_with_templates();
+  $site = site();
+?>
       <div class="bg-white rounded-4 shadow-sm border p-4">
         <form method="post" class="row g-3">
           <input type="hidden" name="action" value="save_site" />

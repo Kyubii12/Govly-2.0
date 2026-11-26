@@ -485,23 +485,26 @@ function act_save_template(): void
 function act_add_template(): void
 {
     require_admin();
-    $type = post('type');
-    if (!$type) {
+    $type = trim(post('type'));
+    if ($type === '') {
         throw new RuntimeException('Enter a certificate name.');
     }
     db_exec(
         'INSERT IGNORE INTO cert_templates (type, body, closing) VALUES (?,?,?)',
         [$type, 'This is to certify that RESIDENT NAME, of legal age, is a bona fide resident of ADDRESS.', 'This certification is issued upon the request of the party concerned for intents and purposes it may serve.']
     );
-    flash('success', 'Template added.');
+    sync_services_with_templates();
+    flash('success', 'Template added and listed under Available Services.');
     redirect('admin?tab=certificates&type=' . urlencode($type));
 }
 
 function act_delete_template(): void
 {
     require_admin();
-    db_exec('DELETE FROM cert_templates WHERE type = ?', [post('type')]);
-    flash('success', 'Template removed.');
+    $type = trim(post('type'));
+    db_exec('DELETE FROM cert_templates WHERE type = ?', [$type]);
+    remove_service_by_type($type);
+    flash('success', 'Template removed from certificates and services.');
     redirect('admin?tab=certificates');
 }
 

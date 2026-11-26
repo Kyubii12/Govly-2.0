@@ -222,6 +222,68 @@ function save_site(array $content): void
     );
 }
 
+/** Keep homepage Services cards in sync with Certificates Management templates. */
+function sync_services_with_templates(): void
+{
+    try {
+        $templates = db_all('SELECT type FROM cert_templates ORDER BY type');
+    } catch (Throwable $e) {
+        return;
+    }
+    $site = site();
+    $services = is_array($site['services'] ?? null) ? $site['services'] : [];
+    $byType = [];
+    foreach ($services as $s) {
+        $t = trim((string) ($s['type'] ?? ''));
+        if ($t !== '') {
+            $byType[mb_strtolower($t)] = true;
+        }
+    }
+
+    $changed = false;
+    foreach ($templates as $row) {
+        $type = trim((string) ($row['type'] ?? ''));
+        if ($type === '') {
+            continue;
+        }
+        $key = mb_strtolower($type);
+        if (isset($byType[$key])) {
+            continue;
+        }
+        $services[] = [
+            'type' => $type,
+            'price' => '₱50.00',
+            'time' => '1-2 days',
+            'desc' => 'Barangay certificate available through the online portal.',
+        ];
+        $byType[$key] = true;
+        $changed = true;
+    }
+
+    if ($changed) {
+        $site['services'] = array_values($services);
+        save_site($site);
+    }
+}
+
+function remove_service_by_type(string $type): void
+{
+    $type = trim($type);
+    if ($type === '') {
+        return;
+    }
+    $site = site();
+    $services = is_array($site['services'] ?? null) ? $site['services'] : [];
+    $filtered = array_values(array_filter($services, static function ($s) use ($type) {
+        return strcasecmp(trim((string) ($s['type'] ?? '')), $type) !== 0;
+    }));
+    if (count($filtered) === count($services)) {
+        return;
+    }
+    $site['services'] = $filtered;
+    save_site($site);
+}
+
 function age_from_birth(?string $date): ?int
 {
     if (!$date) {
